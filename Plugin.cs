@@ -12,7 +12,7 @@ namespace PlaytimeCounter
 
         public override string Name => "PlaytimeCounter";
         public override string Author => "GBN";
-        public override Version Version => new Version(1, 0, 0);
+        public override Version Version => new Version(1, 0, 1);
         public override Version RequiredExiledVersion => new Version(4, 2, 5);
 
         public Dictionary<string, long> joinTime = new Dictionary<string, long>();
