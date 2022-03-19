@@ -1,7 +1,7 @@
 # PlaytimeCounter
 A very simple plugin that tracks playtime of specified groups on your SCP:SL EXILED Server.
 # Reqs
-A discord channel with a webhook, and at least EXILED 4.2.5 (Didn't try on 5.0, so use it on your own risk I guess but it <i>should</i> work)
+A discord channel with a webhook, and at least EXILED 4.2.5
 # Installation
 1. Put PlaytimeCounter.dll in your Plugins folder.
 2. Put Newtonsoft.Json.dll in your Plugins -> dependencies folder.
