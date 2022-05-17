@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,22 +21,19 @@ namespace PlaytimeCounter.Commands
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            Player playerSender = Player.Get(sender);
-            if(playerSender.CheckPermission("pc.checktimes"))
-            {
-                response = "Success!";
-                foreach(string fileName in Directory.GetFiles(Plugin.GroupDir))
-                {
-                    string[] lines = File.ReadAllLines(Path.Combine(Plugin.GroupDir, fileName));
-                    playerSender.RemoteAdminMessage($"{Path.GetFileName(fileName).Substring(0, Path.GetFileName(fileName).Length - 4)}: {lines[0]}");
-                }
-                return true;
-            }
-            else
+            if (!((CommandSender)sender).CheckPermission("pc.checktimes"))
             {
                 response = "Insufficient permissions.";
                 return false;
             }
+
+            response = "Success!\n";
+            foreach (string fileName in Directory.GetFiles(Plugin.GroupDir))
+            {
+                string[] lines = File.ReadAllLines(Path.Combine(Plugin.GroupDir, fileName));
+                response += $"{Path.GetFileName(fileName).Substring(0, Path.GetFileName(fileName).Length - 4)}: { lines[0]}\n";           
+            }
+            return true;
         }
     }
 }
