@@ -4,9 +4,8 @@ A very simple plugin that tracks playtime of specified groups on your SCP:SL EXI
 EXILED 5.2.1
 # Installation
 1. Put PlaytimeCounter.dll in your Plugins folder.
-2. Put Newtonsoft.Json.dll in your Plugins -> dependencies folder.
-3. Set up the config and start the server.
-4. Done!
+2. Set up the config and start the server.
+3. Done!
 # Permissions and Commands
 All are in Remote Admin
 
