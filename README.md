@@ -1,7 +1,5 @@
 # PlaytimeCounter
-A very simple plugin that tracks playtime of specified groups on your SCP:SL EXILED Server.
-# Reqs
-EXILED 5.2.1
+A very simple plugin that tracks playtime of specified groups on your SCP:SL Server.
 # Installation
 1. Put PlaytimeCounter.dll in your Plugins folder.
 2. Set up the config and start the server.
@@ -9,17 +7,16 @@ EXILED 5.2.1
 # Permissions and Commands
 All are in Remote Admin
 
-`checktimes` (`ct`) - `pc.checktimes` - lets you see playtime in saved files on your server.
+`checktimes` (`ct`) - `PlayerSensitiveDataAccess` - lets you see playtime in saved files on your server.
 
-`deletetimes` (`dt`) - `pc.deletetimes` - deletes all playtime files on your server storage.
+`deletetimes` (`dt`) - `PermissionsManagement` - deletes all playtime files on your server storage.
 
-`startsummarytimer <check_interval (exapmles: 1m, 1h, 1d, 1y)>` (`sst`) - `pc.deletetimes` - Sets up a timer that automatically counts total playtime of your staff members
+`startsummarytimer <check_interval (exapmles: 1m, 1h, 1d, 1y)>` (`sst`) - `PermissionsManagement` - Sets up a timer that automatically counts total playtime of your staff members
 
-`stopsummarytimer` (`stopst`) - `pc.deletetimes` - Deletes the timer if it exists.
+`stopsummarytimer` (`stopst`) - `PermissionsManagement` - Deletes the timer if it exists.
 
 # Default Config
 ```
-playtime_counter:
   is_enabled: true
   # List of groups to log playtime of.
   groups_to_log: []
