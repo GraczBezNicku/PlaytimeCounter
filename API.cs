@@ -80,7 +80,7 @@ namespace PlaytimeCounterNWAPI
             while (true)
             {
                 yield return Timing.WaitForSeconds(Plugin.Instance.Config.discordWebhookCooldown);
-                //Log.Debug("Time to send webhook.");
+                Log.Debug("Time to send webhook.");
                 while (message.Length < 2000)
                 {
                     if (messagesQueue.Count == 0)
@@ -99,14 +99,14 @@ namespace PlaytimeCounterNWAPI
 
                 if (message != "")
                 {
-                    //Log.Debug("Preparing webhook.");
+                    Log.Debug("Preparing webhook.");
                     var SuccessWebHook = new
                     {
                         username = "PlaytimeCounter",
                         content = message,
                         avatar_url = Plugin.Instance.Config.webhookAvatarURL
                     };
-                    //Log.Debug("Sending webhook.");
+                    Log.Debug("Sending webhook.");
                     StringContent content = new StringContent(Encoding.UTF8.GetString(Utf8Json.JsonSerializer.Serialize<object>(SuccessWebHook)), Encoding.UTF8, "application/json");
                     _ = Send(content);
                 }
