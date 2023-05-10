@@ -18,6 +18,7 @@ All are in Remote Admin
 # Default Config
 ```
   is_enabled: true
+  debug_mode: true
   # List of groups to log playtime of.
   groups_to_log: []
   # List of groups and their playtime requirement in seconds. If met, reqResult will change based on your config.
