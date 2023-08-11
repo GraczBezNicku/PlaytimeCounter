@@ -35,25 +35,22 @@
     <RootNamespace>PlaytimeCounter</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Lib.Harmony.2.2.2\lib\net48\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp_publicized">
+      <HintPath>D:\SteamLibrary\steamapps\common\SCP Secret Laboratory Dedicated Server\SCPSL_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="PluginAPI">
+      <HintPath>D:\SteamLibrary\steamapps\common\SCP Secret Laboratory Dedicated Server\SCPSL_Data\Managed\PluginAPI.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="API.cs" />
-    <Compile Include="Commands\CheckTime.cs" />
-    <Compile Include="Commands\DeleteTimes.cs" />
-    <Compile Include="Commands\ForceSummary.cs" />
-    <Compile Include="Commands\StartSummaryTimer.cs" />
-    <Compile Include="Commands\StopSummaryTimer.cs" />
-    <Compile Include="Config.cs" />
-    <Compile Include="EventsHandler.cs" />
-    <Compile Include="Patches\LogDebugPatch.cs" />
-    <Compile Include="Plugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".git\config" />
@@ -82,13 +79,16 @@
     <None Include=".git\packed-refs" />
     <None Include=".git\refs\heads\NwPluginAPI" />
     <None Include=".git\refs\remotes\origin\HEAD" />
-    <None Include="Patches\test" />
+    <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".git\objects\info\" />
     <Folder Include=".git\refs\tags\" />
     <Folder Include=".vs\PlaytimeCounter\v17\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Plugin.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>

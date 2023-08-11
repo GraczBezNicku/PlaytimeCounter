@@ -3,3 +3,5 @@
 *.cache
 \obj
 \.vs
+\packages
+\bin
