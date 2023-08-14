@@ -27,7 +27,7 @@ namespace PlaytimeCounter.Features.Discord
         [Description("First line when printing a summary. Supports dynamic values: %TIME%")]
         public string DiscordSummaryFirstMessage { get; set; } = "";
 
-        [Description("This line is used per user in a summary. Supports dynamic values: %{ROLE}HOURS%, %{ROLE}MINUTES%, %{ROLE}SECONDS%, %NAME%, %USERID%, %GROUP%. In place of {ROLE} put the desired role, example: %OVERWATCHHOURS%")]
+        [Description("This line is used per user in a summary. Supports dynamic values: %{ROLE}HOURS%, %{ROLE}MINUTES%, %{ROLE}SECONDS%, %NAME%, %USERID%, %GROUP%. In place of {ROLE} put the desired role, example: %OVERWATCHHOURS%. You can also use for example %GLOBALHOURS%, %ALIVEHOURS%")]
         public string DiscordSummaryPerUserMessage { get; set; } = "";
 
         [Description("If set to true, will be sent without other messages piled up onto it as a part of maximizing messages while minimizing sent requests to Discord API. Recommended to leave as true to avoid potential cutting issues.")]

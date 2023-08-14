@@ -49,7 +49,7 @@ namespace PlaytimeCounter
         [PluginReload]
         public void PluginReload()
         {
-            //Reload all configs here.
+            //Reload all configs here. To be implemented.
         }
 
         [PluginUnload]
@@ -57,6 +57,8 @@ namespace PlaytimeCounter
         {
             _harmony.UnpatchAll();
             _harmony = null;
+
+            TrackingGroup.TrackingGroups.ForEach(x => TrackingGroup.DestroyGroup(x.Name, PluginHandler.Get(this).PluginDirectoryPath));
 
             EventManager.UnregisterAllEvents(this);
             Instance = null;

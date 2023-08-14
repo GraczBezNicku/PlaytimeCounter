@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PlayerRoles;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -60,22 +61,20 @@ namespace PlaytimeCounter.Features.Discord
     public sealed class PlayerLeftWebhook : DiscordWebhook
     {
         public DateTime CurrentTime;
-        public int Hours, Minutes, Seconds;
+        public float Hours, Minutes, Seconds;
         public string Name, UserId, Group;
 
         public PlayerLeftWebhook(string message, string url,
             DateTime currentTime,
-            int hours,
-            int minutes,
-            int seconds,
+            float seconds,
             string name,
             string userid,
             string group) : base(message, url)
         {
             CurrentTime = currentTime;
-            hours = Hours;
-            Minutes = minutes;
             Seconds = seconds;
+            Minutes = Seconds / 60;
+            Hours = Minutes / 60;
             Name = name;
             UserId = userid;
             Group = group;
@@ -97,17 +96,22 @@ namespace PlaytimeCounter.Features.Discord
     {
         public DateTime CurrentTime;
         public string Name, UserId, Group;
+        public RoleTypeId OldRole, NewRole;
 
         public PlayerChangedRoleToWebhook(string message, string url,
             DateTime currentTime,
             string name,
             string userid,
-            string group) : base(message, url)
+            string group,
+            RoleTypeId oldRole,
+            RoleTypeId newRole) : base(message, url)
         {
             CurrentTime = currentTime;
             Name = name;
             UserId = userid;
             Group = group;
+            OldRole = oldRole;
+            NewRole = newRole;
 
             SupportedDynamicValues = new Dictionary<string, object>()
             {
@@ -115,6 +119,8 @@ namespace PlaytimeCounter.Features.Discord
                 {"%NAME%", Name},
                 {"%USERID%", UserId},
                 {"%GROUP%", Group},
+                {"%OLDROLE%", OldRole },
+                {"%NEWROLE%", NewRole},
             };
         }
     }
@@ -123,17 +129,27 @@ namespace PlaytimeCounter.Features.Discord
     {
         public DateTime CurrentTime;
         public string Name, UserId, Group;
+        public float Seconds, Minutes, Hours;
+        public RoleTypeId OldRole, NewRole;
 
         public PlayerChangedRoleFromWebhook(string message, string url,
             DateTime currentTime,
             string name,
             string userid,
-            string group) : base(message, url)
+            string group,
+            float seconds,
+            RoleTypeId oldRole,
+            RoleTypeId newRole) : base(message, url)
         {
             CurrentTime = currentTime;
             Name = name;
             UserId = userid;
             Group = group;
+            Seconds = seconds;
+            Minutes = Seconds / 60;
+            Hours = Minutes / 60;
+            OldRole = oldRole;
+            NewRole = newRole;
 
             SupportedDynamicValues = new Dictionary<string, object>()
             {
@@ -141,6 +157,11 @@ namespace PlaytimeCounter.Features.Discord
                 {"%NAME%", Name},
                 {"%USERID%", UserId},
                 {"%GROUP%", Group},
+                {"%SECONDS%", Seconds },
+                {"%MINUTES%", Minutes },
+                {"%HOURS%", Hours },
+                {"%OLDROLE%", OldRole },
+                {"%NEWROLE%", NewRole},
             };
         }
     }

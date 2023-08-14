@@ -93,11 +93,14 @@
     <Folder Include=".vs\PlaytimeCounter\v17\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\CheckTimes.cs" />
     <Compile Include="Commands\ForceSummary.cs" />
     <Compile Include="Commands\RemoveTrackedUser.cs" />
-    <Compile Include="Commands\RemoveTrackedUsers.cs" />
+    <Compile Include="Commands\RemoveAllTrackedUsers.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Enums\CountingType.cs" />
+    <Compile Include="Enums\SortingType.cs" />
+    <Compile Include="EventsHandler.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Features\Discord\DiscordConfig.cs" />
     <Compile Include="Features\Discord\DiscordWebhook.cs" />

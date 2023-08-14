@@ -14,7 +14,6 @@ namespace PlaytimeCounter
 
         public static UserGroup GetGroupFromString(this string groupName)
         {
-            Log.Debug($"{ServerStatic.GetPermissionsHandler() == null}");
             if(!ServerStatic.GetPermissionsHandler().GetAllGroups().TryGetValue(groupName, out UserGroup userGroup))
             {
                 Log.Error($"Failed getting group as it doesn't exist!");

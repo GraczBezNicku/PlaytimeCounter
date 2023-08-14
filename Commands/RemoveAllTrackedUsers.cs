@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PlaytimeCounter.Commands
 {
-    internal class RemoveTrackedUsers
+    internal class RemoveAllTrackedUsers
     {
     }
 }
