@@ -15,19 +15,6 @@ namespace PlaytimeCounter
 {
     public class Plugin
     {
-        /*
-        FEATURES LIST:
-        Port previous features. (Without tracker, it's now useless)
-        Possible config updater?
-        Limit summary results to specified amount of entries.
-        Seperate folders for multiple groups.
-        New config options (count only when round is started etc.)
-        SummaryTimer based on folders. ^
-        SummaryTimer options: (static (specific IDs), dynamic (specific groups))
-        Save users in .json instead of .txt (saves playtime on all roles)
-        RoleSpecific role tracking (and global as an option)
-        */
-
         [PluginConfig]
         public Config Config;
 
