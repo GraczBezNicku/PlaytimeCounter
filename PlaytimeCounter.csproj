@@ -51,6 +51,9 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="YamlDotNet, Version=13.0.0.0, Culture=neutral, PublicKeyToken=ec19458f3c15af5e, processorArchitecture=MSIL">
+      <HintPath>packages\YamlDotNet.13.2.0\lib\net47\YamlDotNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include=".git\config" />
@@ -79,6 +82,7 @@
     <None Include=".git\packed-refs" />
     <None Include=".git\refs\heads\NwPluginAPI" />
     <None Include=".git\refs\remotes\origin\HEAD" />
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>
@@ -89,6 +93,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config.cs" />
+    <Compile Include="Enums\CountingType.cs" />
+    <Compile Include="Features\Discord\DiscordConfig.cs" />
+    <Compile Include="Features\Discord\DiscordWebhook.cs" />
+    <Compile Include="Features\Discord\DiscordWebhookHandler.cs" />
+    <Compile Include="Features\SummaryTimer.cs" />
+    <Compile Include="Features\TrackedUser.cs" />
+    <Compile Include="Features\TrackingGroup.cs" />
     <Compile Include="Plugin.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />

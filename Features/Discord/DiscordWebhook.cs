@@ -6,6 +6,18 @@ using System.Threading.Tasks;
 
 namespace PlaytimeCounter.Features.Discord
 {
+    public class DiscordWebhookBundle
+    {
+        public bool IsDedicated;
+        public IEnumerable<DiscordWebhook> DiscordWebhooks;
+
+        public DiscordWebhookBundle(IEnumerable<DiscordWebhook> webhooks, bool isDedicated)
+        {
+            IsDedicated = isDedicated;
+            DiscordWebhooks = webhooks;
+        }
+    }
+
     public class DiscordWebhook
     {
         public string TargetURL;
