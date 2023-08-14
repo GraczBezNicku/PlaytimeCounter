@@ -26,6 +26,11 @@ namespace PlaytimeCounter
             return ServerStatic.PermissionsHandler._groups.FirstOrDefault(pair => pair.Value.IsGroupEqual(group)).Key;
         }
 
+        public static string GetGroupName(this Player p)
+        {
+            return p.ReferenceHub.serverRoles.Group == null ? "default" : p.ReferenceHub.serverRoles.Group.GetGroupKey();
+        }
+
         public static bool IsGroupEqual(this UserGroup group, UserGroup other)
             => (group.BadgeColor == other.BadgeColor)
             && (group.BadgeText == other.BadgeText)

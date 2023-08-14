@@ -9,12 +9,10 @@ namespace PlaytimeCounter.Features.Discord
 {
     public class DiscordWebhookBundle
     {
-        public bool IsDedicated;
         public IEnumerable<DiscordWebhook> DiscordWebhooks;
 
         public DiscordWebhookBundle(IEnumerable<DiscordWebhook> webhooks, bool isDedicated)
         {
-            IsDedicated = isDedicated;
             DiscordWebhooks = webhooks;
         }
     }
@@ -23,12 +21,26 @@ namespace PlaytimeCounter.Features.Discord
     {
         public string TargetURL;
         public string Message;
+        public TrackingGroup RequestingGroup;
         public Dictionary<string, object> SupportedDynamicValues;
 
-        public DiscordWebhook(string message, string url) 
+        public DiscordWebhook(string message, string url, TrackingGroup requestingGroup) 
         {
             TargetURL = url;
             Message = message;
+            RequestingGroup = requestingGroup;
+        }
+
+        public string FormattedMessage()
+        {
+            string newMessage = Message;
+
+            foreach(string key in SupportedDynamicValues.Keys)
+            {
+                newMessage = newMessage.Replace(key, SupportedDynamicValues[key].ToString());
+            }
+
+            return newMessage;
         }
     }
 
@@ -37,11 +49,11 @@ namespace PlaytimeCounter.Features.Discord
         public DateTime CurrentTime;
         public string Name, UserId, Group;
 
-        public PlayerJoinedWebhook(string message, string url,
+        public PlayerJoinedWebhook(string message, string url, TrackingGroup requestingGroup,
             DateTime currentTime,
             string name,
             string userid,
-            string group) : base(message, url)
+            string group) : base(message, url, requestingGroup)
         {
             CurrentTime = currentTime;
             Name = name;
@@ -61,15 +73,15 @@ namespace PlaytimeCounter.Features.Discord
     public sealed class PlayerLeftWebhook : DiscordWebhook
     {
         public DateTime CurrentTime;
-        public float Hours, Minutes, Seconds;
+        public long Hours, Minutes, Seconds;
         public string Name, UserId, Group;
 
-        public PlayerLeftWebhook(string message, string url,
+        public PlayerLeftWebhook(string message, string url, TrackingGroup requestingGroup,
             DateTime currentTime,
-            float seconds,
+            long seconds,
             string name,
             string userid,
-            string group) : base(message, url)
+            string group) : base(message, url, requestingGroup)
         {
             CurrentTime = currentTime;
             Seconds = seconds;
@@ -98,13 +110,13 @@ namespace PlaytimeCounter.Features.Discord
         public string Name, UserId, Group;
         public RoleTypeId OldRole, NewRole;
 
-        public PlayerChangedRoleToWebhook(string message, string url,
+        public PlayerChangedRoleToWebhook(string message, string url, TrackingGroup requestingGroup,
             DateTime currentTime,
             string name,
             string userid,
             string group,
             RoleTypeId oldRole,
-            RoleTypeId newRole) : base(message, url)
+            RoleTypeId newRole) : base(message, url, requestingGroup)
         {
             CurrentTime = currentTime;
             Name = name;
@@ -129,17 +141,17 @@ namespace PlaytimeCounter.Features.Discord
     {
         public DateTime CurrentTime;
         public string Name, UserId, Group;
-        public float Seconds, Minutes, Hours;
+        public long Seconds, Minutes, Hours;
         public RoleTypeId OldRole, NewRole;
 
-        public PlayerChangedRoleFromWebhook(string message, string url,
+        public PlayerChangedRoleFromWebhook(string message, string url, TrackingGroup requestingGroup,
             DateTime currentTime,
             string name,
             string userid,
             string group,
-            float seconds,
+            long seconds,
             RoleTypeId oldRole,
-            RoleTypeId newRole) : base(message, url)
+            RoleTypeId newRole) : base(message, url, requestingGroup)
         {
             CurrentTime = currentTime;
             Name = name;

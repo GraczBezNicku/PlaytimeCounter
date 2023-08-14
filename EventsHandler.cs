@@ -1,4 +1,6 @@
-﻿using PluginAPI.Core.Attributes;
+﻿using MEC;
+using PlaytimeCounter.Features.Discord;
+using PluginAPI.Core.Attributes;
 using PluginAPI.Events;
 using System;
 using System.Collections.Generic;
@@ -37,6 +39,20 @@ namespace PlaytimeCounter
         public void OnRoundStart(RoundStartEvent ev)
         {
             RoundStartEvent?.Invoke(this, ev);
+        }
+
+        [PluginEvent(PluginAPI.Enums.ServerEventType.WaitingForPlayers)]
+        public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
+        {
+            if(!Timing.IsRunning(DiscordWebhookHandler.msgHandle))
+            {
+                DiscordWebhookHandler.msgHandle = Timing.RunCoroutine(DiscordWebhookHandler.MessageQueueCoroutine());
+            }
+
+            if(!Timing.IsRunning(DiscordWebhookHandler.queueHandle))
+            {
+                DiscordWebhookHandler.queueHandle = Timing.RunCoroutine(DiscordWebhookHandler.WebhookQueueCoroutine());
+            }
         }
     }
 }

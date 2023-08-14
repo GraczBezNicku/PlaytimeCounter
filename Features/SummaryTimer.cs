@@ -15,7 +15,7 @@ namespace PlaytimeCounter.Features
 
     public class SummaryTimerConfig
     {
-        public bool IsEnabled { get; set; }
+        public bool IsEnabled { get; set; } = false;
 
         [Description("Unix time when the next check should take place.")]
         public ulong NextCheck { get; set; }

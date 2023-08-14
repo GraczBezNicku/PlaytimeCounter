@@ -72,7 +72,7 @@ namespace PlaytimeCounter.Features
                 if (Config.DiscordConfig == null)
                     return false;
 
-                return Config.DiscordConfig.DiscordWebhookURL == "";
+                return Config.DiscordConfig.DiscordWebhookURL != "";
             }
         }
 
@@ -84,7 +84,7 @@ namespace PlaytimeCounter.Features
             if (Config.CountOnlyWhenRoundStarted && !Round.IsRoundStarted)
                 return;
 
-            if (!ShoudTrack(ev.Player))
+            if (!ShouldTrack(ev.Player))
             {
                 Helpers.LogDebug($"{ev.Player.Nickname} would be tracked but they don't meet the requirements.");
                 return;
@@ -95,12 +95,18 @@ namespace PlaytimeCounter.Features
 
             _globalJoinTimes.Add(ev.Player, DateTimeOffset.Now.ToUnixTimeSeconds());
 
-            //Send webhook PlayerJoinedWebhook
+            Helpers.LogDebug($"Webhooks enabled: {_discordWebhookEnabled}, Message: {discordConfig.DiscordPlayerJoinedMessage}");
+
+            if(_discordWebhookEnabled && discordConfig.DiscordPlayerJoinedMessage != "")
+            {
+                PlayerJoinedWebhook webhook = new PlayerJoinedWebhook(discordConfig.DiscordPlayerJoinedMessage, discordConfig.DiscordWebhookURL, this, DateTime.Now, ev.Player.Nickname, ev.Player.UserId, ev.Player.GetGroupName());
+                DiscordWebhookHandler.WebhookQueue.Enqueue(webhook);
+            }
         }
 
         public void OnPlayerLeft(object sender, PlayerLeftEvent ev)
         {
-            if (!ShoudTrack(ev.Player))
+            if (!ShouldTrack(ev.Player))
             {
                 Helpers.LogDebug($"{ev.Player.Nickname} would be tracked but they don't meet the requirements.");
                 return;
@@ -116,7 +122,19 @@ namespace PlaytimeCounter.Features
                 _globalJoinTimes.Remove(ev.Player);
                 Helpers.LogDebug($"{ev.Player.Nickname} has left the game and got additional {finalTime} seconds onto GlobalTime.");
                 TrackedUser.SaveTrackedUser(trackedUser, this);
-                //Send webhook PlayerLeftWebhook
+                
+                if(_discordWebhookEnabled && discordConfig.DiscordPlayerLeftMessage != "")
+                {
+                    PlayerLeftWebhook webhook = new PlayerLeftWebhook(discordConfig.DiscordPlayerLeftMessage, 
+                        discordConfig.DiscordWebhookURL, 
+                        this, 
+                        DateTime.Now, 
+                        finalTime, 
+                        ev.Player.Nickname, 
+                        ev.Player.UserId, 
+                        ev.Player.GetGroupName());
+                    DiscordWebhookHandler.WebhookQueue.Enqueue(webhook);
+                }
             }
         }
 
@@ -125,7 +143,7 @@ namespace PlaytimeCounter.Features
             if (Config.CountOnlyWhenRoundStarted && !Round.IsRoundStarted)
                 return;
 
-            if (!ShoudTrack(ev.Player))
+            if (!ShouldTrack(ev.Player))
             {
                 Helpers.LogDebug($"{ev.Player.Nickname} would be tracked but they don't meet the requirements.");
                 return;
@@ -136,7 +154,19 @@ namespace PlaytimeCounter.Features
 
             if(rolesToTrack.Contains(ev.NewRole))
             {
-                //Send webhook PlayerChangedRoleToWebhook
+                if(_discordWebhookEnabled && discordConfig.DiscordPlayerChangedRoleToMessage != "")
+                {
+                    PlayerChangedRoleToWebhook webhook = new PlayerChangedRoleToWebhook(discordConfig.DiscordPlayerChangedRoleToMessage,
+                        discordConfig.DiscordWebhookURL,
+                        this,
+                        DateTime.Now,
+                        ev.Player.Nickname,
+                        ev.Player.UserId,
+                        ev.Player.GetGroupName(),
+                        ev.OldRole.RoleTypeId,
+                        ev.NewRole);
+                    DiscordWebhookHandler.WebhookQueue.Enqueue(webhook);
+                }
             }
 
             if(rolesToTrack.Contains(ev.OldRole.RoleTypeId))
@@ -159,7 +189,21 @@ namespace PlaytimeCounter.Features
                 trackedUser.TimeTable[ev.OldRole.RoleTypeId] += finalTime;
                 Helpers.LogDebug($"{ev.Player.Nickname} changed their role from {ev.OldRole.RoleTypeId} to {ev.NewRole} and increased their timetable for {ev.OldRole.RoleTypeId} by {finalTime}");
                 TrackedUser.SaveTrackedUser(trackedUser, this);
-                //Send PlayerChangedRoleFromWebhook
+                
+                if(_discordWebhookEnabled && discordConfig.DiscordPlayerChangedRoleFromMessage != "")
+                {
+                    PlayerChangedRoleFromWebhook webhook = new PlayerChangedRoleFromWebhook(discordConfig.DiscordPlayerChangedRoleFromMessage,
+                        discordConfig.DiscordWebhookURL,
+                        this,
+                        DateTime.Now,
+                        ev.Player.Nickname,
+                        ev.Player.UserId,
+                        ev.Player.GetGroupName(),
+                        finalTime,
+                        ev.OldRole.RoleTypeId,
+                        ev.NewRole);
+                    DiscordWebhookHandler.WebhookQueue.Enqueue(webhook);
+                }
             }
         }
 
@@ -172,7 +216,7 @@ namespace PlaytimeCounter.Features
             _globalJoinTimes.Clear();
             foreach(Player p in Player.GetPlayers())
             {
-                if (!ShoudTrack(p))
+                if (!ShouldTrack(p))
                 {
                     Helpers.LogDebug($"{p.Nickname} would be tracked but they don't meet the requirements.");
                     continue;
@@ -183,7 +227,7 @@ namespace PlaytimeCounter.Features
             }
         }
 
-        public bool ShoudTrack(Player p)
+        public bool ShouldTrack(Player p)
         {
             if (p.DoNotTrack && !_dntIgnored)
                 return false;
