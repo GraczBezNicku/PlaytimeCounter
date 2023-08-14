@@ -9,6 +9,7 @@ namespace PlaytimeCounter.Features
 {
     public class TrackedUser
     {
+        public string TrackingGroup { get; set; }
         public string DisplayNickname { get; set; }
         public bool DntEnabled { get; set; }
         public string Group { get; set; }

@@ -51,6 +51,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="YamlDotNet, Version=13.0.0.0, Culture=neutral, PublicKeyToken=ec19458f3c15af5e, processorArchitecture=MSIL">
       <HintPath>packages\YamlDotNet.13.2.0\lib\net47\YamlDotNet.dll</HintPath>
     </Reference>
@@ -92,14 +93,19 @@
     <Folder Include=".vs\PlaytimeCounter\v17\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\ForceSummary.cs" />
+    <Compile Include="Commands\RemoveTrackedUser.cs" />
+    <Compile Include="Commands\RemoveTrackedUsers.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Enums\CountingType.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Features\Discord\DiscordConfig.cs" />
     <Compile Include="Features\Discord\DiscordWebhook.cs" />
     <Compile Include="Features\Discord\DiscordWebhookHandler.cs" />
     <Compile Include="Features\SummaryTimer.cs" />
     <Compile Include="Features\TrackedUser.cs" />
     <Compile Include="Features\TrackingGroup.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="Plugin.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />

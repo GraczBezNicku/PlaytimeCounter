@@ -34,13 +34,13 @@ namespace PlaytimeCounter
         public static Plugin Instance { get; private set; }
         private Harmony _harmony;
 
+        public bool GroupsRegistered = false;
+
         [PluginEntryPoint("PlaytimeCounter", "3.0.0", "Lets you track playitme of specified groups or people.", "GBN")]
         public void PluginLoad()
         {
             Instance = this;
             EventManager.RegisterAllEvents(this);
-
-            LoadTrackingGroups(PluginHandler.Get(this).PluginDirectoryPath);
 
             _harmony = new Harmony($"GBN-PLAYTIMECOUNTER-{DateTime.Now}");
             _harmony.PatchAll();
@@ -62,30 +62,13 @@ namespace PlaytimeCounter
             Instance = null;
         }
 
-        public void LoadTrackingGroups(string configDir)
+        [PluginEvent(PluginAPI.Enums.ServerEventType.WaitingForPlayers)]
+        public void RegisterAllGroups(WaitingForPlayersEvent ev)
         {
-            foreach(string configTracker in Plugin.Instance.Config.TrackingGroups)
-            {
-                string groupPath = Path.Combine(configDir, configTracker);
-                if(!Directory.Exists(groupPath))
-                {
-                    Log.Info($"TrackingGroup {configTracker} does not exist! Creating one now...");
-                    CreateGroup(configTracker, configDir);
-                }
+            if (Plugin.Instance.GroupsRegistered)
+                return;
 
-                
-            }
-        }
-
-        public void CreateGroup(string groupName, string configDir)
-        {
-            DirectoryInfo groupDir = Directory.CreateDirectory(Path.Combine(configDir, groupName));
-            Directory.CreateDirectory(Path.Combine(groupDir.FullName, "TrackedUsers"));
-
-            TrackingGroupConfig dummyConfig = new TrackingGroupConfig();
-            File.WriteAllText(Path.Combine(groupDir.FullName, "config.yml"), YamlParser.Serializer.Serialize(dummyConfig));
-
-            Log.Info($"Successfully created TrackingGroup {groupName}!");
+            TrackingGroup.LoadTrackingGroups(PluginHandler.Get(Plugin.Instance).PluginDirectoryPath);
         }
     }
 }
