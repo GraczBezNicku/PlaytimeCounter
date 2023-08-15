@@ -27,10 +27,10 @@ namespace PlaytimeCounter.Features.Discord
         [Description("Webhook message which will be sent when a player changes their role from one contained within the tracked role list. If empty, message will not be sent. Supports dynamic values: %TIME%, %NAME%, %USERID%, %GROUP%, %OLDROLE%, %NEWROLE%, %HOURS%, %MINUTES%, %SECONDS%")]
         public string DiscordPlayerChangedRoleFromMessage { get; set; } = "**[%TIME%] Player %NAME% (%USERID%) [%GROUP%] has changed their role from %OLDROLE% to %NEWROLE% after playing for %MINUTES%m (%SECONDS%s)**";
 
-        [Description("First line when printing a summary. If empty, message will not be sent. Supports dynamic values: %TIME%")]
+        [Description("First line when printing a summary. If empty, message will not be sent. Supports dynamic values: %TIME%, %ROUNDTIME%")]
         public string DiscordSummaryFirstMessage { get; set; } = "**[%TIME%]** Staff Playtime Summary:";
 
         [Description("This line is used per user in a summary. If empty, message will not be sent. Supports dynamic values: %{ROLE}HOURS%, %{ROLE}MINUTES%, %{ROLE}SECONDS%, %NAME%, %USERID%, %GROUP%. In place of {ROLE} put the desired role, example: %OVERWATCHHOURS%. You can also use for example %GLOBALHOURS%, %ALIVEHOURS%")]
-        public string DiscordSummaryPerUserMessage { get; set; } = "**%NAME% (%USERID%) [%GROUP%] has globally played for %MINUTES%m (%SECONDS%s)**";
+        public string DiscordSummaryPerUserMessage { get; set; } = "**%NAME% (%USERID%) [%GROUP%] has globally played for %GLOBALMINUTES%m (%GLOBALSECONDS%s) (and %OVERWATCHMINUTES%m (%OVERWATCHSECONDS%s) on Overwatch)**";
     }
 }

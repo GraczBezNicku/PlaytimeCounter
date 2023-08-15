@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Discord;
 using PlayerRoles;
 using PlaytimeCounter.Enums;
 using PlaytimeCounter.Features.Discord;
@@ -25,6 +26,7 @@ namespace PlaytimeCounter.Features
             EventsHandler.PlayerLeftEvent += OnPlayerLeft;
             EventsHandler.PlayerChangeRoleEvent += OnPlayerChangeRole;
             EventsHandler.RoundStartEvent += OnRoundStart;
+            EventsHandler.RoundEndEvent += OnRoundEnd;
             _roleTimeOffsets = new Dictionary<Player, long>();
             _globalJoinTimes = new Dictionary<Player, long>();
         }
@@ -44,9 +46,6 @@ namespace PlaytimeCounter.Features
         public List<string> idsToLog;
 
         public List<RoleTypeId> rolesToTrack;
-
-        public SummaryTimerConfig summaryConfig;
-        public DiscordConfig discordConfig;
 
         public bool _dntIgnored
         {
@@ -95,11 +94,11 @@ namespace PlaytimeCounter.Features
 
             _globalJoinTimes.Add(ev.Player, DateTimeOffset.Now.ToUnixTimeSeconds());
 
-            Helpers.LogDebug($"Webhooks enabled: {_discordWebhookEnabled}, Message: {discordConfig.DiscordPlayerJoinedMessage}");
+            Helpers.LogDebug($"Webhooks enabled: {_discordWebhookEnabled}, Message: {Config.DiscordConfig.DiscordPlayerJoinedMessage}");
 
-            if(_discordWebhookEnabled && discordConfig.DiscordPlayerJoinedMessage != "")
+            if(_discordWebhookEnabled && Config.DiscordConfig.DiscordPlayerJoinedMessage != "")
             {
-                PlayerJoinedWebhook webhook = new PlayerJoinedWebhook(discordConfig.DiscordPlayerJoinedMessage, discordConfig.DiscordWebhookURL, this, DateTime.Now, ev.Player.Nickname, ev.Player.UserId, ev.Player.GetGroupName());
+                PlayerJoinedWebhook webhook = new PlayerJoinedWebhook(Config.DiscordConfig.DiscordPlayerJoinedMessage, Config.DiscordConfig.DiscordWebhookURL, this, DateTime.Now, ev.Player.Nickname, ev.Player.UserId, ev.Player.GetGroupName());
                 DiscordWebhookHandler.WebhookQueue.Enqueue(webhook);
             }
         }
@@ -123,10 +122,10 @@ namespace PlaytimeCounter.Features
                 Helpers.LogDebug($"{ev.Player.Nickname} has left the game and got additional {finalTime} seconds onto GlobalTime.");
                 TrackedUser.SaveTrackedUser(trackedUser, this);
                 
-                if(_discordWebhookEnabled && discordConfig.DiscordPlayerLeftMessage != "")
+                if(_discordWebhookEnabled && Config.DiscordConfig.DiscordPlayerLeftMessage != "")
                 {
-                    PlayerLeftWebhook webhook = new PlayerLeftWebhook(discordConfig.DiscordPlayerLeftMessage, 
-                        discordConfig.DiscordWebhookURL, 
+                    PlayerLeftWebhook webhook = new PlayerLeftWebhook(Config.DiscordConfig.DiscordPlayerLeftMessage, 
+                        Config.DiscordConfig.DiscordWebhookURL, 
                         this, 
                         DateTime.Now, 
                         finalTime, 
@@ -154,10 +153,10 @@ namespace PlaytimeCounter.Features
 
             if(rolesToTrack.Contains(ev.NewRole))
             {
-                if(_discordWebhookEnabled && discordConfig.DiscordPlayerChangedRoleToMessage != "")
+                if(_discordWebhookEnabled && Config.DiscordConfig.DiscordPlayerChangedRoleToMessage != "")
                 {
-                    PlayerChangedRoleToWebhook webhook = new PlayerChangedRoleToWebhook(discordConfig.DiscordPlayerChangedRoleToMessage,
-                        discordConfig.DiscordWebhookURL,
+                    PlayerChangedRoleToWebhook webhook = new PlayerChangedRoleToWebhook(Config.DiscordConfig.DiscordPlayerChangedRoleToMessage,
+                        Config.DiscordConfig.DiscordWebhookURL,
                         this,
                         DateTime.Now,
                         ev.Player.Nickname,
@@ -169,31 +168,36 @@ namespace PlaytimeCounter.Features
                 }
             }
 
-            if(rolesToTrack.Contains(ev.OldRole.RoleTypeId))
+            long finalTime;
+
+            if (_roleTimeOffsets.ContainsKey(ev.Player))
             {
-                long finalTime;
+                Helpers.LogDebug($"{ev.Player.Nickname}'s active time offset is {_roleTimeOffsets[ev.Player]}");
+                finalTime = Convert.ToInt64(ev.OldRole.ActiveTime) - _roleTimeOffsets[ev.Player];
+            }
+            else
+                finalTime = Convert.ToInt64(ev.OldRole.ActiveTime);
 
-                if(_roleTimeOffsets.ContainsKey(ev.Player))
-                {
-                    Helpers.LogDebug($"{ev.Player.Nickname}'s active time offset is {_roleTimeOffsets[ev.Player]}");
-                    finalTime = Convert.ToInt64(ev.OldRole.ActiveTime) - _roleTimeOffsets[ev.Player];
-                }
-                else
-                    finalTime = Convert.ToInt64(ev.OldRole.ActiveTime);
+            _roleTimeOffsets.Remove(ev.Player);
 
-                if (finalTime < 1)
-                    finalTime = 0;
+            if (finalTime < 1)
+                finalTime = 0;
 
-                _roleTimeOffsets.Remove(ev.Player);
+            if (ev.OldRole.RoleTypeId.IsAlive())
+            {
+                trackedUser.AliveTime += finalTime;
+            }
 
+            if (rolesToTrack.Contains(ev.OldRole.RoleTypeId))
+            {
                 trackedUser.TimeTable[ev.OldRole.RoleTypeId] += finalTime;
                 Helpers.LogDebug($"{ev.Player.Nickname} changed their role from {ev.OldRole.RoleTypeId} to {ev.NewRole} and increased their timetable for {ev.OldRole.RoleTypeId} by {finalTime}");
                 TrackedUser.SaveTrackedUser(trackedUser, this);
                 
-                if(_discordWebhookEnabled && discordConfig.DiscordPlayerChangedRoleFromMessage != "")
+                if(_discordWebhookEnabled && Config.DiscordConfig.DiscordPlayerChangedRoleFromMessage != "")
                 {
-                    PlayerChangedRoleFromWebhook webhook = new PlayerChangedRoleFromWebhook(discordConfig.DiscordPlayerChangedRoleFromMessage,
-                        discordConfig.DiscordWebhookURL,
+                    PlayerChangedRoleFromWebhook webhook = new PlayerChangedRoleFromWebhook(Config.DiscordConfig.DiscordPlayerChangedRoleFromMessage,
+                        Config.DiscordConfig.DiscordWebhookURL,
                         this,
                         DateTime.Now,
                         ev.Player.Nickname,
@@ -224,6 +228,26 @@ namespace PlaytimeCounter.Features
 
                 _roleTimeOffsets.Add(p, Convert.ToInt64(p.RoleBase.ActiveTime));
                 _globalJoinTimes.Add(p, DateTimeOffset.Now.ToUnixTimeSeconds());
+            }
+        }
+
+        public void OnRoundEnd(object sender, RoundEndEvent ev)
+        {
+            Helpers.LogDebug($"Round has ended and has lasted {Round.Duration.TotalSeconds} (Rounded: {Convert.ToInt64(Round.Duration.TotalSeconds)})");
+            Config.SummaryTimerConfig.RoundTimeBetweenSummaries += Convert.ToInt64(Round.Duration.TotalSeconds);
+            SaveConfig();
+        }
+
+        public void SaveConfig()
+        {
+            try
+            {
+                File.WriteAllText(Path.Combine(groupDir, "config.yml"), YamlParser.Serializer.Serialize(Config));
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed saving a TrackingGroup's config! Exception: {ex.Message}");
+                return;
             }
         }
 
@@ -291,8 +315,6 @@ namespace PlaytimeCounter.Features
                     trackingGroup.groupDir = groupPath;
                     trackingGroup.trackedUsersDir = Path.Combine(groupPath, "TrackedUsers");
                     trackingGroup.rolesToTrack = trackingGroupConfig.RolesToTrack;
-                    trackingGroup.summaryConfig = trackingGroupConfig.SummaryTimerConfig;
-                    trackingGroup.discordConfig = trackingGroupConfig.DiscordConfig;
 
                     Helpers.LogDebug("Checkpoint 3");
 
@@ -385,9 +407,13 @@ namespace PlaytimeCounter.Features
             EventsHandler.PlayerLeftEvent -= group.OnPlayerLeft;
             EventsHandler.PlayerChangeRoleEvent -= group.OnPlayerChangeRole;
             EventsHandler.RoundStartEvent -= group.OnRoundStart;
+            EventsHandler.RoundEndEvent -= group.OnRoundEnd;
+
+            group.SaveConfig();
 
             TrackingGroups.Remove(group);
             group.trackedUsers.ForEach(x => TrackedUser.SaveTrackedUser(x, group));
+            group.trackedUsers.Clear();
         }
     }
 

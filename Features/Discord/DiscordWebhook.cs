@@ -11,7 +11,7 @@ namespace PlaytimeCounter.Features.Discord
     {
         public IEnumerable<DiscordWebhook> DiscordWebhooks;
 
-        public DiscordWebhookBundle(IEnumerable<DiscordWebhook> webhooks, bool isDedicated)
+        public DiscordWebhookBundle(IEnumerable<DiscordWebhook> webhooks)
         {
             DiscordWebhooks = webhooks;
         }
@@ -41,6 +41,64 @@ namespace PlaytimeCounter.Features.Discord
             }
 
             return newMessage;
+        }
+    }
+
+    public sealed class SummaryFirstLineWebhook : DiscordWebhook
+    {
+        public long RoundTime;
+        public DateTime CurrentTime;
+
+        public SummaryFirstLineWebhook(string message, string url, TrackingGroup requestingGroup,
+            long roundTime,
+            DateTime currentTime) : base(message, url, requestingGroup)
+        {
+            RoundTime = roundTime;
+            CurrentTime = currentTime;
+
+            SupportedDynamicValues = new Dictionary<string, object>()
+            {
+                {"%ROUNDTIME%", RoundTime },
+                {"%TIME%", CurrentTime},
+            };
+        }
+    }
+
+    public sealed class SummaryUserWebhook : DiscordWebhook
+    {
+        public string Nickname, UserId, Group;
+        public long GlobalTime, AliveTime;
+        public Dictionary<RoleTypeId, long> TimeTable;
+
+        public SummaryUserWebhook(string message, string url, TrackingGroup requestingGroup,
+            TrackedUser user) : base(message, url, requestingGroup)
+        {
+            Nickname = user.Nickname;
+            UserId = user.UserId;
+            Group = user.Group;
+            GlobalTime = user.GlobalTime;
+            AliveTime = user.AliveTime;
+            TimeTable = new(user.TimeTable);
+
+            SupportedDynamicValues = new Dictionary<string, object>()
+            {
+                {"%NAME%", Nickname },
+                {"%USERID%", UserId },
+                {"%GROUP%", Group },
+                {"%GLOBALSECONDS%", GlobalTime },
+                {"%GLOBALMINUTES%", GlobalTime / 60 },
+                {"%GLOBALHOURS%", (GlobalTime / 60) / 60 },
+                {"%ALIVESECONDS%", AliveTime },
+                {"%ALIVEMINUTES%", AliveTime / 60 },
+                {"%ALIVEHOURS%", (AliveTime / 60) / 60 },
+            };
+
+            foreach(RoleTypeId role in TimeTable.Keys)
+            {
+                SupportedDynamicValues.Add($"%{role.ToString().ToUpper()}SECONDS%", TimeTable[role]);
+                SupportedDynamicValues.Add($"%{role.ToString().ToUpper()}MINUTES%", TimeTable[role] / 60);
+                SupportedDynamicValues.Add($"%{role.ToString().ToUpper()}HOURS%", (TimeTable[role] / 60) / 60);
+            }
         }
     }
 

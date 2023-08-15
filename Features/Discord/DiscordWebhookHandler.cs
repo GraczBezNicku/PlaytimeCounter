@@ -49,12 +49,12 @@ namespace PlaytimeCounter.Features.Discord
                     KeyValuePair<TrackingGroup, string> webhook = MessagesQueue.Dequeue();
                     var SuccessfullWebhook = new
                     {
-                        username = webhook.Key.discordConfig.DiscordWebhookUsername,
+                        username = webhook.Key.Config.DiscordConfig.DiscordWebhookUsername,
                         content = webhook.Value,
-                        avatar_url = webhook.Key.discordConfig.DiscordWebhookAvatarUrl
+                        avatar_url = webhook.Key.Config.DiscordConfig.DiscordWebhookAvatarUrl
                     };
                     StringContent content = new StringContent(Encoding.UTF8.GetString(Utf8Json.JsonSerializer.Serialize<object>(SuccessfullWebhook)), Encoding.UTF8, "application/json");
-                    _ = Send(content, webhook.Key.discordConfig.DiscordWebhookURL);
+                    _ = Send(content, webhook.Key.Config.DiscordConfig.DiscordWebhookURL);
                 }
             }
         }

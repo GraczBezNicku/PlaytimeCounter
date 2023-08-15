@@ -18,6 +18,7 @@ namespace PlaytimeCounter.Features
         public string Group { get; set; }
         public bool DntEnabled { get; set; }
         public long GlobalTime { get; set; }
+        public long AliveTime { get; set; }
         public Dictionary<RoleTypeId, long> TimeTable { get; set; }
 
         public static TrackedUser CreateTrackedUser(Player p, TrackingGroup trackingGroup)
@@ -30,6 +31,7 @@ namespace PlaytimeCounter.Features
             user.Group = p.ReferenceHub.serverRoles.Group == null ? "default" : p.ReferenceHub.serverRoles.Group.GetGroupKey();
             user.DntEnabled = p.DoNotTrack;
             user.GlobalTime = 0;
+            user.AliveTime = 0;
             user.TimeTable = new Dictionary<RoleTypeId, long>();
             
             foreach(RoleTypeId role in Enum.GetValues(typeof(RoleTypeId)))
