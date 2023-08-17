@@ -253,7 +253,7 @@ namespace PlaytimeCounter.Features
 
         public bool ShouldTrack(Player p)
         {
-            if (p.UserId == "")
+            if (p.UserId == "" || p.Nickname == "(null)")
                 return false;
 
             if (p.DoNotTrack && !_dntIgnored)
