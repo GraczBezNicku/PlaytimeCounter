@@ -1,0 +1,8 @@
+is_enabled: true
+debug_mode: false
+# Lists all tracking groups. If a group with this name doesn't exist, it will automatically be created.
+tracking_groups:
+- Staff
+- GeneralPlayers
+# Global Cooldown which will be applied on all outgoing webhooks. Recommended value is 5 to avoid rate limits.
+discord_webhook_cooldown: 5

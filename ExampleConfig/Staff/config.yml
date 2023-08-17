@@ -1,0 +1,47 @@
+# If set to true, PlaytimeCounter will not ignore players with DNT enabled when counting. **Using this setting on a verified server is blocked by default, as it may be a VSR violation unless you received proper clearance from tracked players. Read VSR 8.11.5 for more info.**
+ignore_d_n_t: false
+# If set to true, will only count playtime when the round is started.
+count_only_when_round_started: false
+# Determines if individual users should be tracked instead of groups.
+counting_type: Group
+# List of Groups / UserIDs of people that are to be tracked. Whether you should put UserIDs in there instead of groups relies on the CountingType config. 'default' will track people without groups and 'everyone' will track everyone.
+tracking_targets:
+- owner
+# Roles to track playtime of. If left empty, will only track 'global' and 'alive' playtime
+roles_to_track:
+- Overwatch
+# Config section dedicated to Discord logging.
+discord_config:
+# Webhook URL where messages are going to be sent. If empty, messages are disabled.
+  discord_webhook_u_r_l: ''
+  discord_webhook_username: PlaytimeCounter
+  discord_webhook_avatar_url: https://cdn.discordapp.com/attachments/434037173281488899/940610688760545290/mrozonyhyperthink.jpg
+  # Webhook message which will be sent when a player joins. (If counting only in round is enabled, then this will be sent when the round starts or when a player joins during a round) If empty, message will not be sent. Supports dynamic values: %TIME%, %NAME%, %USERID%, %GROUP%
+  discord_player_joined_message: '**[%TIME%] Player %NAME% (%USERID%) [%GROUP%] has joined the server.**'
+  # Webhook message which will be sent when a player leaves. If empty, message will not be sent. Supports dynamic values: %TIME%, %HOURS%, %MINUTES%, %SECONDS%, %NAME%, %USERID%, %GROUP%
+  discord_player_left_message: '**[%TIME%] Player %NAME% (%USERID%) [%GROUP%] has left the server after playing for %MINUTES%m (%SECONDS%s)**'
+  # Webhook message which will be sent when a player changes their role to one contained within the tracked role list. If empty, message will not be sent. Supports dynamic values: %TIME%, %NAME%, %USERID%, %GROUP%, %OLDROLE%, %NEWROLE%
+  discord_player_changed_role_to_message: '**[%TIME%] Player %NAME% (%USERID%) [%GROUP%] has changed their role from %OLDROLE% to %NEWROLE%**'
+  # Webhook message which will be sent when a player changes their role from one contained within the tracked role list. If empty, message will not be sent. Supports dynamic values: %TIME%, %NAME%, %USERID%, %GROUP%, %OLDROLE%, %NEWROLE%, %HOURS%, %MINUTES%, %SECONDS%
+  discord_player_changed_role_from_message: '**[%TIME%] Player %NAME% (%USERID%) [%GROUP%] has changed their role from %OLDROLE% to %NEWROLE% after playing for %MINUTES%m (%SECONDS%s)**'
+  # First line when printing a summary. If empty, message will not be sent. Supports dynamic values: %TIME%, %ROUNDTIME%
+  discord_summary_first_message: '**[%TIME%]** Staff Playtime Summary:'
+  # This line is used per user in a summary. If empty, message will not be sent. Supports dynamic values: %{ROLE}HOURS%, %{ROLE}MINUTES%, %{ROLE}SECONDS%, %NAME%, %USERID%, %GROUP%. In place of {ROLE} put the desired role, example: %OVERWATCHHOURS%. You can also use for example %GLOBALHOURS%, %ALIVEHOURS%
+  discord_summary_per_user_message: '**%NAME% (%USERID%) [%GROUP%] has globally played for %GLOBALMINUTES%m (%GLOBALSECONDS%s) (and %OVERWATCHMINUTES%m (%OVERWATCHSECONDS%s) on Overwatch)**'
+# Config section dedicated to summary timers.
+summary_timer_config:
+  is_enabled: false
+  # Unix time when the next check should take place.
+  next_check: 3384541809
+  # Time in seconds to add to NextCheck when a summary is printed.
+  check_interval: 0
+  # This variable holds round time in seconds to allow %ROUNDSECONDS%, %ROUNDMINUTES% and %ROUNDHOURS% to be used in summaries.
+  round_time_between_summaries: 0
+  # Whether or not to remove times for a group when a summary is printed.
+  remove_times: true
+  # How many entries are to be printed out when a summary is made. (Will still remove all times if RemoveTimes is true!)
+  max_entries: 10
+  # Determines how to sort entries in the summary. (Group and Nickname alphabetically, Time descending)
+  sorting_type: Time
+  # Only used when SortingType is set to 'Time'. Determines which role the list will be sorted by (use RoleTypeId, 'Alive' or 'Global')
+  time_sorting_role: Global

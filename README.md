@@ -1,51 +1,30 @@
 # PlaytimeCounter
-A very simple plugin that tracks playtime of specified groups on your SCP:SL Server.
+This is a plugin designed to track playtime of your staff members and players. 
+This exists for people that may want time tracking but don't want all the other features that come with other plugins.
+
+# features
+1. Playtime Counting.
+2. Functionality of multiple tracking groups, allowing for different settings.
+3. Automatic summaries to keep track of your staff members.
+4. Discord Integration.
+
 # Installation
-1. Put PlaytimeCounter.dll in your Plugins folder.
-2. Set up the config and start the server.
-3. Done!
+1. Download the .DLL Plugin file and Dependencies.zip
+2. Throw the plugin .DLL file in PluginAPI/plugins/*port*
+3. Unpack all Dependencies into PluginAPI/plugins/*port*/dependencies
+4. Set up config.yml and launch the server!
+
+# Example config
+By default, PlaytimeCounter will generate a sample config so you can wrap your head around the config system, which has dramatically changed since the last PlaytimeCounter release.
+In the ExampleConfig folder you can find the default configuration PlaytimeCounter generates.
+
 # Permissions and Commands
-All are in Remote Admin
+All commands are executed in Remote Admin:
 
-`checktimes` (`ct`) - `PlayerSensitiveDataAccess` - lets you see playtime in saved files on your server.
+`CheckTimes <groupName>` (`ct`) - `PlayerSensitiveDataAccess` - Will print out the playtime data for a specified group.
 
-`deletetimes` (`dt`) - `PermissionsManagement` - deletes all playtime files on your server storage.
+`ForceSummary <groupName> <deleteTimes(bool)> <affectNextCheck(bool)>` (`fsum`) - `PermissionsManagement` - Will force a discord summary. AffectNextCheck determines whether or not the next summary will be postponed by the CheckInterval value.
 
-`startsummarytimer <check_interval (exapmles: 1m, 1h, 1d, 1y)>` (`sst`) - `PermissionsManagement` - Sets up a timer that automatically counts total playtime of your staff members
+`RemoveTrackedUser <groupName> <userId>` (`rtu`) - `PermissionsManagement` - Will remove a tracked user by their userId from a specified group.
 
-`stopsummarytimer` (`stopst`) - `PermissionsManagement` - Deletes the timer if it exists.
-
-`forcesummary <delete_times?bool>` (`fsum`) - `PermissionsManagement` - Forces a summary printout on discord.
-
-# Default Config
-```
-is_enabled: true
-debug_mode: true
-# This allows me to see how many people actually use this plugin. It will only inform me of the following: Server Name, Server IP & Port, Time at which your server started.
-server_tracking: true
-# List of groups to log playtime of.
-groups_to_log: []
-# List of groups and their playtime requirement in seconds. If met, reqResult will change based on your config.
-group_reqs:
-  owner: 12600
-# List of groups and their playtime requirement (in overwatch mode) in seconds. If met, reqResultOv will change based on your config.
-group_reqs_ov:
-  owner: 12600
-webhook_u_r_l: ''
-webhook_avatar_u_r_l: https://cdn.discordapp.com/attachments/434037173281488899/940610688760545290/mrozonyhyperthink.jpg
-discord_webhook_cooldown: 10
-summary_check_cooldown: 300
-# First line when printing playtime summary
-webhook_count_message: >
-  Playtime summary: 
-# Lines printed out for users which have playtime recorded. Accepts parameters: {steamID64}, {nickname}, {group}, {hours}, {minutes}, {seconds}, {hoursOv}, {minutesOv}, {secondsOv}, {reqResult}, {reqResultOv}
-webhook_count_user_message: >
-  **{nickname} ({steamID64}) [{group}]** has played for **{minutes}m ({minutesOv})** - Normal criteria met? {reqResult}, Overwatch criteria met? {reqResultOv} 
-webhook_req_result_met: ':white_check_mark:'
-webhook_req_result_not_met: ':x:'
-webhook_req_result_unknown: ':warning:'
-# Message that will display on discord when a tracked player leaves the server. (can use {seconds} and {hours} too)
-webhook_message: '{time} **{player}** left the server after playing for **{minutes}** minutes'
-# Message that will display on discord when a tracked player leaves Overwatch mode. (can use {seconds} and {hours} too)
-webhook_message_overwatch: '{time} **{player}** left Overwatch mode after playing for **{minutes}** minutes'
-```
+`RemoveAllTrackedUsers <groupName>` (`ratu`) - `PermissionsManagement` - Will remove all tracked users from a specified group.
