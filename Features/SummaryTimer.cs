@@ -29,41 +29,48 @@ namespace PlaytimeCounter.Features
                 {
                     if(DateTimeOffset.Now.ToUnixTimeSeconds() >= group.Config.SummaryTimerConfig.NextCheck)
                     {
-                        PrepareSummary(group, group.Config.SummaryTimerConfig.RemoveTimes);
+                        PrepareSummary(group, group.Config.SummaryTimerConfig.RemoveTimes, true);
                     }
                 }
             }
         }
 
-        public static void PrepareSummary(TrackingGroup group, bool deleteUsers)
+        public static List<TrackedUser> SortListBySortingRule(TrackingGroup group)
         {
-            Helpers.LogDebug($"Creating summary for {group.Name} with deleteUsers set to {deleteUsers}");
-            List<TrackedUser> usersToList = new List<TrackedUser>();
-            List<TrackedUser> sortedUserList = new List<TrackedUser>();
+            List<TrackedUser> listToReturn = new List<TrackedUser>();
 
-            switch(group.Config.SummaryTimerConfig.SortingType)
+            switch (group.Config.SummaryTimerConfig.SortingType)
             {
-                case SortingType.Time: 
-                    switch(group.Config.SummaryTimerConfig.TimeSortingRole)
+                case SortingType.Time:
+                    switch (group.Config.SummaryTimerConfig.TimeSortingRole)
                     {
-                        case "Global": sortedUserList = group.trackedUsers.OrderByDescending(x => x.GlobalTime).ToList(); break;
-                        case "Alive": sortedUserList = group.trackedUsers.OrderByDescending(x => x.AliveTime).ToList(); break;
+                        case "Global": listToReturn = group.trackedUsers.OrderByDescending(x => x.GlobalTime).ToList(); break;
+                        case "Alive": listToReturn = group.trackedUsers.OrderByDescending(x => x.AliveTime).ToList(); break;
                         default:
-                            if(Enum.TryParse(group.Config.SummaryTimerConfig.TimeSortingRole, true, out RoleTypeId role))
+                            if (Enum.TryParse(group.Config.SummaryTimerConfig.TimeSortingRole, true, out RoleTypeId role))
                             {
-                                sortedUserList = group.trackedUsers.OrderByDescending(x => x.TimeTable[role]).ToList();
+                                listToReturn = group.trackedUsers.OrderByDescending(x => x.TimeTable[role]).ToList();
                             }
                             else
                             {
                                 PluginAPI.Core.Log.Error($"Could not find RoleTypeId {group.Config.SummaryTimerConfig.TimeSortingRole}! Defaulting to global...");
-                                sortedUserList = group.trackedUsers.OrderByDescending(x => x.GlobalTime).ToList();
+                                listToReturn = group.trackedUsers.OrderByDescending(x => x.GlobalTime).ToList();
                             }
                             break;
                     }
                     break;
-                case SortingType.Group: sortedUserList = group.trackedUsers.OrderBy(x => x.Group).ToList(); break;
-                case SortingType.Nickname: sortedUserList = group.trackedUsers.OrderBy(x => x.Nickname).ToList(); break;
+                case SortingType.Group: listToReturn = group.trackedUsers.OrderBy(x => x.Group).ToList(); break;
+                case SortingType.Nickname: listToReturn = group.trackedUsers.OrderBy(x => x.Nickname).ToList(); break;
             }
+
+            return listToReturn;
+        }
+
+        public static void PrepareSummary(TrackingGroup group, bool deleteUsers, bool affectNextCheck)
+        {
+            Helpers.LogDebug($"Creating summary for {group.Name} with deleteUsers set to {deleteUsers}");
+            List<TrackedUser> usersToList = new List<TrackedUser>();
+            List<TrackedUser> sortedUserList = SortListBySortingRule(group);
 
             if(group.CountingType == CountingType.User && sortedUserList.Count() < group.idsToLog.Count())
             {
@@ -74,7 +81,7 @@ namespace PlaytimeCounter.Features
 
                     missingUser.TrackingGroup = group.Name;
                     missingUser.Nickname = "undefined";
-                    missingUser.UserId = "undefined@undefined";
+                    missingUser.UserId = id;
                     missingUser.Group = "undefined";
                     missingUser.DntEnabled = false;
                     missingUser.GlobalTime = 0;
@@ -124,9 +131,12 @@ namespace PlaytimeCounter.Features
                 Helpers.LogDebug($"Deleted all user data for {group.Name}");
             }
 
-            group.Config.SummaryTimerConfig.RoundTimeBetweenSummaries = 0;
-            group.Config.SummaryTimerConfig.NextCheck += group.Config.SummaryTimerConfig.CheckInterval;
-            group.SaveConfig();
+            if(affectNextCheck)
+            {
+                group.Config.SummaryTimerConfig.RoundTimeBetweenSummaries = 0;
+                group.Config.SummaryTimerConfig.NextCheck += DateTimeOffset.Now.ToUnixTimeSeconds() + group.Config.SummaryTimerConfig.CheckInterval;
+                group.SaveConfig();
+            }
         }
     }
 
