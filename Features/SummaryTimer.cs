@@ -134,7 +134,7 @@ namespace PlaytimeCounter.Features
             if(affectNextCheck)
             {
                 group.Config.SummaryTimerConfig.RoundTimeBetweenSummaries = 0;
-                group.Config.SummaryTimerConfig.NextCheck += DateTimeOffset.Now.ToUnixTimeSeconds() + group.Config.SummaryTimerConfig.CheckInterval;
+                group.Config.SummaryTimerConfig.NextCheck += group.Config.SummaryTimerConfig.CheckInterval;
                 group.SaveConfig();
             }
         }
