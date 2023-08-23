@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
+using MEC;
 using PlayerRoles;
 using PlaytimeCounter.Enums;
 using PlaytimeCounter.Features.Discord;
@@ -94,6 +95,7 @@ namespace PlaytimeCounter.Features
 
             _globalJoinTimes.Add(ev.Player, DateTimeOffset.Now.ToUnixTimeSeconds());
 
+            LogInternal($"{ev.Player.Nickname} has joined the server and is now being tracked");
             Helpers.LogDebug($"Webhooks enabled: {_discordWebhookEnabled}, Message: {Config.DiscordConfig.DiscordPlayerJoinedMessage}");
 
             if(_discordWebhookEnabled && Config.DiscordConfig.DiscordPlayerJoinedMessage != "")
@@ -116,6 +118,7 @@ namespace PlaytimeCounter.Features
 
             if(_globalJoinTimes.ContainsKey(ev.Player))
             {
+                LogInternal($"{ev.Player.Nickname} has left the server and their time information will be updated");
                 long finalTime = DateTimeOffset.Now.ToUnixTimeSeconds() - _globalJoinTimes[ev.Player];
                 trackedUser.GlobalTime += finalTime;
                 _globalJoinTimes.Remove(ev.Player);
@@ -153,6 +156,7 @@ namespace PlaytimeCounter.Features
 
             if(rolesToTrack.Contains(ev.NewRole))
             {
+                LogInternal($"{ev.Player.Nickname} has changed their role from {ev.OldRole.RoleTypeId} to {ev.NewRole}");
                 if(_discordWebhookEnabled && Config.DiscordConfig.DiscordPlayerChangedRoleToMessage != "")
                 {
                     PlayerChangedRoleToWebhook webhook = new PlayerChangedRoleToWebhook(Config.DiscordConfig.DiscordPlayerChangedRoleToMessage,
@@ -191,6 +195,7 @@ namespace PlaytimeCounter.Features
             if (rolesToTrack.Contains(ev.OldRole.RoleTypeId))
             {
                 trackedUser.TimeTable[ev.OldRole.RoleTypeId] += finalTime;
+                LogInternal($"{ev.Player.Nickname} changed their role from {ev.OldRole.RoleTypeId} to {ev.NewRole} and increased their timetable for {ev.OldRole.RoleTypeId} by {finalTime}");
                 Helpers.LogDebug($"{ev.Player.Nickname} changed their role from {ev.OldRole.RoleTypeId} to {ev.NewRole} and increased their timetable for {ev.OldRole.RoleTypeId} by {finalTime}");
                 TrackedUser.SaveTrackedUser(trackedUser, this);
                 
@@ -213,6 +218,8 @@ namespace PlaytimeCounter.Features
 
         public void OnRoundStart(object sender, RoundStartEvent ev)
         {
+            LogInternal($"ROUND HAS STARTED AT {DateTime.Now}");
+
             if (!Config.CountOnlyWhenRoundStarted)
                 return;
 
@@ -233,13 +240,33 @@ namespace PlaytimeCounter.Features
 
         public void OnRoundEnd(object sender, RoundEndEvent ev)
         {
+            LogInternal($"ROUND HAS ENDED AT {DateTime.Now}");
             Helpers.LogDebug($"Round has ended and has lasted {Round.Duration.TotalSeconds} (Rounded: {Convert.ToInt64(Round.Duration.TotalSeconds)})");
+
             Config.SummaryTimerConfig.RoundTimeBetweenSummaries += Convert.ToInt64(Round.Duration.TotalSeconds);
+
+            if(Config.ReForceclassOnRoundEnd)
+            {
+                Timing.CallDelayed(1f, () =>
+                {
+                    foreach(Player p in Player.GetPlayers())
+                    {
+                        if (!ShouldTrack(p))
+                            continue;
+
+                        RoleTypeId oldRole = p.ReferenceHub.roleManager.CurrentRole.RoleTypeId;
+                        p.ReferenceHub.roleManager.ServerSetRole(RoleTypeId.Spectator, RoleChangeReason.RemoteAdmin, (RoleSpawnFlags)3);
+                        Timing.CallDelayed(0.5f, () => p.ReferenceHub.roleManager.ServerSetRole(oldRole, RoleChangeReason.RemoteAdmin, (RoleSpawnFlags)3));
+                    }
+                });
+            }
+
             SaveConfig();
         }
 
         public void SaveConfig()
         {
+            LogInternal($"SaveConfig was called");
             try
             {
                 File.WriteAllText(Path.Combine(groupDir, "config.yml"), YamlParser.Serializer.Serialize(Config));
@@ -284,6 +311,21 @@ namespace PlaytimeCounter.Features
             }
 
             return true;
+        }
+
+        public void LogInternal(string content)
+        {
+            if (!Config.InternalLogging)
+                return;
+
+            try
+            {
+                File.AppendAllText(Path.Combine(groupDir, "log.txt"), $"\n[{DateTime.Now}] [{Name.ToUpper()}] {content}");
+            }
+            catch(Exception ex)
+            {
+                Log.Error($"Failed internal logging for group {Name}! Exception: {ex.Message}");
+            }
         }
 
         public static void LoadTrackingGroups(string configDir)
@@ -396,7 +438,7 @@ namespace PlaytimeCounter.Features
             }
         }
 
-        public static void DestroyGroup(string groupName, string configDir) 
+        public static void DestroyGroup(string groupName) 
         { 
             if(!TrackingGroup.TrackingGroups.Any(x => x.Name == groupName))
             {
@@ -405,6 +447,8 @@ namespace PlaytimeCounter.Features
             }
 
             TrackingGroup group = TrackingGroup.TrackingGroups.First(x => x.Name == groupName);
+
+            group.LogInternal($"Group is about to be destroyed");
 
             EventsHandler.PlayerJoinedEvent -= group.OnPlayerJoined;
             EventsHandler.PlayerLeftEvent -= group.OnPlayerLeft;
@@ -424,6 +468,12 @@ namespace PlaytimeCounter.Features
     {
         [Description("If set to true, PlaytimeCounter will not ignore players with DNT enabled when counting. **Using this setting on a verified server is blocked by default, as it may be a VSR violation unless you received proper clearance from tracked players. Read VSR 8.11.5 for more info.**")]
         public bool IgnoreDNT { get; set; } = false;
+
+        [Description("If set to true, enables internal logging, so that you can diagnose issues with the plugin. Logs will be kept in a single file called 'log.txt' in the groups directory")]
+        public bool InternalLogging { get; set; } = true;
+
+        [Description("If set to true, will reforceclass all users matching tracking settings to their original role, to artificially trigger the ChangeRole event")]
+        public bool ReForceclassOnRoundEnd { get; set; } = true;
 
         [Description("If set to true, will only count playtime when the round is started.")]
         public bool CountOnlyWhenRoundStarted { get; set; } = false;

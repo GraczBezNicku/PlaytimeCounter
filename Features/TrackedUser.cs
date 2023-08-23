@@ -48,6 +48,7 @@ namespace PlaytimeCounter.Features
 
         public static void SaveTrackedUser(TrackedUser user, TrackingGroup trackingGroup)
         {
+            trackingGroup.LogInternal($"User {user.Nickname} is about to save their time information");
             try
             {
                 File.WriteAllText(Path.Combine(trackingGroup.trackedUsersDir, $"{user.UserId}.yml"), YamlParser.Serializer.Serialize(user));

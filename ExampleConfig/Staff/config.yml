@@ -1,5 +1,9 @@
 # If set to true, PlaytimeCounter will not ignore players with DNT enabled when counting. **Using this setting on a verified server is blocked by default, as it may be a VSR violation unless you received proper clearance from tracked players. Read VSR 8.11.5 for more info.**
 ignore_d_n_t: false
+# If set to true, enables internal logging, so that you can diagnose issues with the plugin. Logs will be kept in a single file called 'log.txt' in the groups directory
+internal_logging: true
+# If set to true, will reforceclass all users matching tracking settings to their original role, to artificially trigger the ChangeRole event
+re_forceclass_on_round_end: true
 # If set to true, will only count playtime when the round is started.
 count_only_when_round_started: false
 # Determines if individual users should be tracked instead of groups.
@@ -32,7 +36,7 @@ discord_config:
 summary_timer_config:
   is_enabled: false
   # Unix time when the next check should take place.
-  next_check: 3384541809
+  next_check: 0
   # Time in seconds to add to NextCheck when a summary is printed.
   check_interval: 0
   # This variable holds round time in seconds to allow %ROUNDSECONDS%, %ROUNDMINUTES% and %ROUNDHOURS% to be used in summaries.

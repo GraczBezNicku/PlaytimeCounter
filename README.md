@@ -14,6 +14,10 @@ This exists for people that may want time tracking but don't want all the other 
 3. Unpack all Dependencies into PluginAPI/plugins/*port*/dependencies
 4. Set up config.yml and launch the server!
 
+# To certain server hosts
+If your server is soft-restarting almost every round, or you're using the `restart_after_rounds` config option, it's strongly recommended to enable `re_forceclass_on_round_end` in your config, to ensure all times are correctly saved. 
+Note that if you're tracking global time only, then you don't need to use this option.
+
 # Example config
 By default, PlaytimeCounter will generate a sample config so you can wrap your head around the config system, which has dramatically changed since the last PlaytimeCounter release.
 In the ExampleConfig folder you can find the default configuration PlaytimeCounter generates.

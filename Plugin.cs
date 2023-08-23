@@ -45,7 +45,7 @@ namespace PlaytimeCounter
             _harmony.UnpatchAll();
             _harmony = null;
 
-            TrackingGroup.TrackingGroups.ForEach(x => TrackingGroup.DestroyGroup(x.Name, PluginHandler.Get(this).PluginDirectoryPath));
+            TrackingGroup.TrackingGroups.ForEach(x => TrackingGroup.DestroyGroup(x.Name));
 
             EventManager.UnregisterAllEvents(this);
             Instance = null;
