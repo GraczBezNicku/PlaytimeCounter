@@ -478,6 +478,9 @@ namespace PlaytimeCounter.Features
         [Description("If set to true, will only count playtime when the round is started.")]
         public bool CountOnlyWhenRoundStarted { get; set; } = false;
 
+        [Description("If set to true, will allow tracked users from this group to see their playtime.")]
+        public bool AppearInSelfCheck { get; set; } = true;
+
         [Description("Determines if individual users should be tracked instead of groups.")]
         public CountingType CountingType { get; set; } = CountingType.Group;
 

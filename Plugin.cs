@@ -23,7 +23,7 @@ namespace PlaytimeCounter
 
         public bool GroupsRegistered = false;
 
-        [PluginEntryPoint("PlaytimeCounter", "3.0.0-pre3", "Lets you track playitme of specified groups or people.", "GBN")]
+        [PluginEntryPoint("PlaytimeCounter", "3.0.0-RC1", "Lets you track playitme of specified groups or people.", "GBN")]
         public void PluginLoad()
         {
             Instance = this;

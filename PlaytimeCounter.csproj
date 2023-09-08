@@ -107,6 +107,7 @@
     <Folder Include=".vs\PlaytimeCounter\v17\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\CheckSelfTime.cs" />
     <Compile Include="Commands\CheckTimes.cs" />
     <Compile Include="Commands\ForceSummary.cs" />
     <Compile Include="Commands\RemoveTrackedUser.cs" />

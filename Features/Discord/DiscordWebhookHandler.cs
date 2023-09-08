@@ -53,6 +53,7 @@ namespace PlaytimeCounter.Features.Discord
                         content = webhook.Value,
                         avatar_url = webhook.Key.Config.DiscordConfig.DiscordWebhookAvatarUrl
                     };
+                    webhook.Key.LogInternal($"Discord Webhook about to be sent: {webhook.Value}");
                     StringContent content = new StringContent(Encoding.UTF8.GetString(Utf8Json.JsonSerializer.Serialize<object>(SuccessfullWebhook)), Encoding.UTF8, "application/json");
                     _ = Send(content, webhook.Key.Config.DiscordConfig.DiscordWebhookURL);
                 }
