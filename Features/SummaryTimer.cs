@@ -72,6 +72,7 @@ namespace PlaytimeCounter.Features
             List<TrackedUser> usersToList = new List<TrackedUser>();
             List<TrackedUser> sortedUserList = SortListBySortingRule(group);
 
+            /*
             if(group.CountingType == CountingType.User && sortedUserList.Count() < group.idsToLog.Count())
             {
                 List<string> missingIds = group.idsToLog.Where(x => !sortedUserList.Any(y => y.UserId == x)).ToList();
@@ -96,6 +97,7 @@ namespace PlaytimeCounter.Features
                     sortedUserList.Add(missingUser);
                 }
             }
+            */
 
             if(sortedUserList.Count() > group.Config.SummaryTimerConfig.MaxEntries) 
             {
