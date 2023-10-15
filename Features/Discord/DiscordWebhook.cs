@@ -61,6 +61,13 @@ namespace PlaytimeCounter.Features.Discord
                 {"%ROUNDTIME%", RoundTime },
                 {"%TIME%", CurrentTime},
             };
+
+            string debugMessage = requestingGroup.Config.DiscordConfig.DiscordSummaryFirstMessage;
+            foreach (KeyValuePair<string, object> keyValuePair in SupportedDynamicValues)
+            {
+                debugMessage.Replace(keyValuePair.Key, keyValuePair.Value.ToString());
+            }
+            requestingGroup.LogInternal(debugMessage);
         }
     }
 
@@ -99,6 +106,13 @@ namespace PlaytimeCounter.Features.Discord
                 SupportedDynamicValues.Add($"%{role.ToString().ToUpper()}MINUTES%", TimeTable[role] / 60);
                 SupportedDynamicValues.Add($"%{role.ToString().ToUpper()}HOURS%", (TimeTable[role] / 60) / 60);
             }
+
+            string debugMessage = requestingGroup.Config.DiscordConfig.DiscordSummaryPerUserMessage;
+            foreach(KeyValuePair<string, object> keyValuePair in SupportedDynamicValues)
+            {
+                debugMessage.Replace(keyValuePair.Key, keyValuePair.Value.ToString());
+            }
+            requestingGroup.LogInternal(debugMessage);
         }
     }
 

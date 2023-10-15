@@ -55,8 +55,10 @@ namespace PlaytimeCounter.Features
                 if (Config == null)
                     return false;
 
+                /*
                 if (Server.PermissionsHandler.IsVerified)
                     return false;
+                */
 
                 return Config.IgnoreDNT;
             }
