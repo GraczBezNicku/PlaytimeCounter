@@ -271,7 +271,11 @@ namespace PlaytimeCounter.Features
             LogInternal($"SaveConfig was called");
             try
             {
-                File.WriteAllText(Path.Combine(groupDir, "config.yml"), YamlParser.Serializer.Serialize(Config));
+                TrackingGroupConfig currentConfigFile = YamlParser.Deserializer.Deserialize<TrackingGroupConfig>(File.ReadAllText(Path.Combine(groupDir, "config.yml")));
+
+                currentConfigFile.SummaryTimerConfig = Config.SummaryTimerConfig;
+
+                File.WriteAllText(Path.Combine(groupDir, "config.yml"), YamlParser.Serializer.Serialize(currentConfigFile));
             }
             catch (Exception ex)
             {

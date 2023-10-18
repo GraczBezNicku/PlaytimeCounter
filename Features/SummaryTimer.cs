@@ -144,6 +144,7 @@ namespace PlaytimeCounter.Features
 
     public class SummaryTimerConfig
     {
+        [Description("WARNING! This secion of the config file HAS to be edited when the server is off. Otherwise, its contents will get overriden when the round ends.")]
         public bool IsEnabled { get; set; } = false;
 
         [Description("Unix time when the next check should take place.")]
