@@ -30,6 +30,7 @@ namespace PlaytimeCounter.Features
             EventsHandler.RoundEndEvent += OnRoundEnd;
             _roleTimeOffsets = new Dictionary<Player, long>();
             _globalJoinTimes = new Dictionary<Player, long>();
+            _excludedRolesOffset = new Dictionary<Player, long>();
         }
 
         public string Name;
@@ -80,31 +81,35 @@ namespace PlaytimeCounter.Features
 
         private Dictionary<Player, long> _roleTimeOffsets;
         private Dictionary<Player, long> _globalJoinTimes;
+        private Dictionary<Player, long> _excludedRolesOffset;
 
         public void OnPlayerJoined(object sender, PlayerJoinedEvent ev)
         {
-            if (Config.CountOnlyWhenRoundStarted && !Round.IsRoundStarted)
-                return;
-
-            if (!ShouldTrack(ev.Player))
+            Timing.CallDelayed(1f, () =>
             {
-                Helpers.LogDebug($"{ev.Player.Nickname} would be tracked but they don't meet the requirements.");
-                return;
-            }
+                if (Config.CountOnlyWhenRoundStarted && !Round.IsRoundStarted)
+                    return;
 
-            if (_globalJoinTimes.ContainsKey(ev.Player))
-                _globalJoinTimes.Remove(ev.Player);
+                if (!ShouldTrack(ev.Player))
+                {
+                    Helpers.LogDebug($"{ev.Player.Nickname} would be tracked but they don't meet the requirements.");
+                    return;
+                }
 
-            _globalJoinTimes.Add(ev.Player, DateTimeOffset.Now.ToUnixTimeSeconds());
+                if (_globalJoinTimes.ContainsKey(ev.Player))
+                    _globalJoinTimes.Remove(ev.Player);
 
-            LogInternal($"{ev.Player.Nickname} has joined the server and is now being tracked");
-            Helpers.LogDebug($"Webhooks enabled: {_discordWebhookEnabled}, Message: {Config.DiscordConfig.DiscordPlayerJoinedMessage}");
+                _globalJoinTimes.Add(ev.Player, DateTimeOffset.Now.ToUnixTimeSeconds());
 
-            if(_discordWebhookEnabled && Config.DiscordConfig.DiscordPlayerJoinedMessage != "")
-            {
-                PlayerJoinedWebhook webhook = new PlayerJoinedWebhook(Config.DiscordConfig.DiscordPlayerJoinedMessage, Config.DiscordConfig.DiscordWebhookURL, this, DateTime.Now, ev.Player.Nickname, ev.Player.UserId, ev.Player.GetGroupName());
-                DiscordWebhookHandler.WebhookQueue.Enqueue(webhook);
-            }
+                LogInternal($"{ev.Player.Nickname} has joined the server and is now being tracked");
+                Helpers.LogDebug($"Webhooks enabled: {_discordWebhookEnabled}, Message: {Config.DiscordConfig.DiscordPlayerJoinedMessage}");
+
+                if(_discordWebhookEnabled && Config.DiscordConfig.DiscordPlayerJoinedMessage != "")
+                {
+                    PlayerJoinedWebhook webhook = new PlayerJoinedWebhook(Config.DiscordConfig.DiscordPlayerJoinedMessage, Config.DiscordConfig.DiscordWebhookURL, this, DateTime.Now, ev.Player.Nickname, ev.Player.UserId, ev.Player.GetGroupName());
+                    DiscordWebhookHandler.WebhookQueue.Enqueue(webhook);
+                }
+            });
         }
 
         public void OnPlayerLeft(object sender, PlayerLeftEvent ev)
@@ -155,6 +160,21 @@ namespace PlaytimeCounter.Features
 
             if (!TrackedUser.TryGetTrackedUser(ev.Player, this, out TrackedUser trackedUser))
                 trackedUser = TrackedUser.CreateTrackedUser(ev.Player, this);
+
+            if (_excludedRolesOffset.ContainsKey(ev.Player))
+            {
+                // Here we are removing a potential key and adding the seconds to _globalJoinTimes, effectively making this role "not count"
+                if (_globalJoinTimes.ContainsKey(ev.Player))
+                    _globalJoinTimes[ev.Player] += DateTimeOffset.Now.ToUnixTimeSeconds() - _excludedRolesOffset[ev.Player];
+
+                _excludedRolesOffset.Remove(ev.Player);
+            }
+
+            if (Config.RolesToExclude.Contains(ev.NewRole))
+            {
+                // Here we are adding the player with the excluded role to a dictionary, to be later used at global time substraction.
+                _excludedRolesOffset.Add(ev.Player, DateTimeOffset.Now.ToUnixTimeSeconds());
+            }
 
             if(rolesToTrack.Contains(ev.NewRole))
             {
@@ -401,6 +421,8 @@ namespace PlaytimeCounter.Features
                         TrackedUser trackedUser = new TrackedUser();
                         try
                         {
+                            //RemoveFlamingoFromFile(file);
+
                             trackedUser = YamlParser.Deserializer.Deserialize<TrackedUser>(content);
                         }
                         catch(Exception ex) 
@@ -468,6 +490,15 @@ namespace PlaytimeCounter.Features
             group.trackedUsers.ForEach(x => TrackedUser.SaveTrackedUser(x, group));
             group.trackedUsers.Clear();
         }
+
+        public static void RemoveFlamingoFromFile(string path)
+        {
+            // thanks Northwood!
+
+            string[] noFlamingoContent = File.ReadAllLines(path).Where(x => !x.Contains("Flamingo") && !x.Contains("AlphaFlamingo") && !x.Contains("ZombieFlamingo")).ToArray();
+
+            File.WriteAllLines(path, noFlamingoContent);
+        }
     }
 
     public class TrackingGroupConfig
@@ -498,6 +529,12 @@ namespace PlaytimeCounter.Features
 
         [Description("Roles to track playtime of. If left empty, will only track 'global' and 'alive' playtime")]
         public List<RoleTypeId> RolesToTrack { get; set; } = new List<RoleTypeId>()
+        {
+            RoleTypeId.Overwatch
+        };
+
+        [Description("Roles to exclude from global playtime.")]
+        public List<RoleTypeId> RolesToExclude { get; set; } = new List<RoleTypeId>()
         {
             RoleTypeId.Overwatch
         };
