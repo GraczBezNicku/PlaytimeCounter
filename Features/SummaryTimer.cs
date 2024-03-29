@@ -22,12 +22,12 @@ namespace PlaytimeCounter.Features
         public static IEnumerator<float> SummaryTimerCheck()
         {
             Helpers.LogDebug($"Summary coroutine running!");
-            while(true)
+            while (true)
             {
                 yield return Timing.WaitForSeconds(Plugin.Instance.Config.DiscordWebhookCooldown);
-                foreach(TrackingGroup group in TrackingGroup.TrackingGroups)
+                foreach (TrackingGroup group in TrackingGroup.TrackingGroups)
                 {
-                    if(DateTimeOffset.Now.ToUnixTimeSeconds() >= group.Config.SummaryTimerConfig.NextCheck)
+                    if (DateTimeOffset.Now.ToUnixTimeSeconds() >= group.Config.SummaryTimerConfig.NextCheck)
                     {
                         PrepareSummary(group, group.Config.SummaryTimerConfig.RemoveTimes, true);
                     }

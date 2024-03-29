@@ -312,7 +312,7 @@ namespace PlaytimeCounter.Features
             if (p.DoNotTrack && !_dntIgnored)
                 return false;
 
-            if(CountingType == CountingType.User)
+            if (CountingType == CountingType.User)
             {
                 if (idsToLog.Contains(p.UserId))
                     return true;

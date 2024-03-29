@@ -30,9 +30,12 @@ namespace PlaytimeCounter
         {
             PlayerLeftEvent?.Invoke(this, ev);
 
-            //Leaving the game will not save playtime, therefore we need to fire this event.
-            PlayerChangeRoleEvent roleEv = new PlayerChangeRoleEvent(ev.Player.ReferenceHub, ev.Player.RoleBase, PlayerRoles.RoleTypeId.None, PlayerRoles.RoleChangeReason.Destroyed);
-            PlayerChangeRoleEvent?.Invoke(this, roleEv);
+            if (!CustomNetworkManager.TypedSingleton._disconnectDrop)
+            {
+                //Leaving the game will not save playtime, therefore we need to fire this event.
+                PlayerChangeRoleEvent roleEv = new PlayerChangeRoleEvent(ev.Player.ReferenceHub, ev.Player.RoleBase, PlayerRoles.RoleTypeId.None, PlayerRoles.RoleChangeReason.Destroyed);
+                PlayerChangeRoleEvent?.Invoke(this, roleEv);
+            }
         }
 
         [PluginEvent(PluginAPI.Enums.ServerEventType.PlayerChangeRole)]

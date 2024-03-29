@@ -53,7 +53,7 @@ namespace PlaytimeCounter.Features
             {
                 File.WriteAllText(Path.Combine(trackingGroup.trackedUsersDir, $"{user.UserId}.yml"), YamlParser.Serializer.Serialize(user));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error($"Failed saving a TrackedUser! Exception: {ex.Message}");
                 return;
@@ -89,7 +89,7 @@ namespace PlaytimeCounter.Features
                 else
                     return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 user = null;
                 return false;
