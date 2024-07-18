@@ -33,12 +33,6 @@ namespace PlaytimeCounter
             _harmony.PatchAll();
         }
 
-        [PluginReload]
-        public void PluginReload()
-        {
-            //Reload all configs here. To be implemented.
-        }
-
         [PluginUnload]
         public void PluginUnload()
         {

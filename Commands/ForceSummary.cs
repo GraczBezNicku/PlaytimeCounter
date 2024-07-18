@@ -17,6 +17,8 @@ namespace PlaytimeCounter.Commands
 
         public string Description { get; } = "Forces a summary for a specified group. Can specify if times are to be deleted and if NextCheck should be affected.";
 
+        public bool SanitizeResponse => false;
+
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!((CommandSender)sender).CheckPermission(PlayerPermissions.PermissionsManagement))

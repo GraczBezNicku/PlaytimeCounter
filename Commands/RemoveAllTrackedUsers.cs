@@ -18,6 +18,8 @@ namespace PlaytimeCounter.Commands
 
         public string Description { get; } = "Removes all tracked users in a specified group.";
 
+        public bool SanitizeResponse => false;
+
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!((CommandSender)sender).CheckPermission(PlayerPermissions.PermissionsManagement))

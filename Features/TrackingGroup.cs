@@ -56,11 +56,6 @@ namespace PlaytimeCounter.Features
                 if (Config == null)
                     return false;
 
-                /*
-                if (Server.PermissionsHandler.IsVerified)
-                    return false;
-                */
-
                 return Config.IgnoreDNT;
             }
         }
@@ -491,10 +486,9 @@ namespace PlaytimeCounter.Features
             group.trackedUsers.Clear();
         }
 
+        [Obsolete("Used only after the Christmas update to clean leftover flamingo entries.")]
         public static void RemoveFlamingoFromFile(string path)
         {
-            // thanks Northwood!
-
             string[] noFlamingoContent = File.ReadAllLines(path).Where(x => !x.Contains("Flamingo") && !x.Contains("AlphaFlamingo") && !x.Contains("ZombieFlamingo")).ToArray();
 
             File.WriteAllLines(path, noFlamingoContent);
@@ -503,7 +497,7 @@ namespace PlaytimeCounter.Features
 
     public class TrackingGroupConfig
     {
-        [Description("If set to true, PlaytimeCounter will not ignore players with DNT enabled when counting. **Using this setting on a verified server is blocked by default, as it may be a VSR violation unless you received proper clearance from tracked players. Read VSR 8.11.5 for more info.**")]
+        [Description("If set to true, PlaytimeCounter will not ignore players with DNT enabled when counting. **Using this setting on a verified server may be a VSR violation unless you received proper clearance from tracked players. Read VSR 8.11.5 for more info.**")]
         public bool IgnoreDNT { get; set; } = false;
 
         [Description("If set to true, enables internal logging, so that you can diagnose issues with the plugin. Logs will be kept in a single file called 'log.txt' in the groups directory")]

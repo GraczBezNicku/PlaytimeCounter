@@ -18,6 +18,8 @@ namespace PlaytimeCounter.Commands
 
         public string Description { get; } = "Shows current tracked time for a specified group.";
 
+        public bool SanitizeResponse => false;
+
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!((CommandSender)sender).CheckPermission(PlayerPermissions.PlayerSensitiveDataAccess))

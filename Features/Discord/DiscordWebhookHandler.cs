@@ -14,8 +14,6 @@ namespace PlaytimeCounter.Features.Discord
 {
     public static class DiscordWebhookHandler
     {
-        //Create Webhook sending handler with queues.
-
         private static readonly HttpClient HttpClient = new HttpClient();
         public static Queue<DiscordWebhook> WebhookQueue = new Queue<DiscordWebhook>();
         public static Queue<DiscordWebhookBundle> WebhookBundleQueue = new Queue<DiscordWebhookBundle>();

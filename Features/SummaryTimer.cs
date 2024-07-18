@@ -72,33 +72,6 @@ namespace PlaytimeCounter.Features
             List<TrackedUser> usersToList = new List<TrackedUser>();
             List<TrackedUser> sortedUserList = SortListBySortingRule(group);
 
-            /*
-            if(group.CountingType == CountingType.User && sortedUserList.Count() < group.idsToLog.Count())
-            {
-                List<string> missingIds = group.idsToLog.Where(x => !sortedUserList.Any(y => y.UserId == x)).ToList();
-                foreach(string id in missingIds)
-                {
-                    TrackedUser missingUser = new TrackedUser();
-
-                    missingUser.TrackingGroup = group.Name;
-                    missingUser.Nickname = "undefined";
-                    missingUser.UserId = id;
-                    missingUser.Group = "undefined";
-                    missingUser.DntEnabled = false;
-                    missingUser.GlobalTime = 0;
-                    missingUser.AliveTime = 0;
-                    missingUser.TimeTable = new Dictionary<RoleTypeId, long>();
-
-                    foreach (RoleTypeId role in Enum.GetValues(typeof(RoleTypeId)))
-                    {
-                        missingUser.TimeTable.Add(role, 0);
-                    }
-
-                    sortedUserList.Add(missingUser);
-                }
-            }
-            */
-
             if(sortedUserList.Count() > group.Config.SummaryTimerConfig.MaxEntries) 
             {
                 sortedUserList.RemoveRange(group.Config.SummaryTimerConfig.MaxEntries, sortedUserList.Count() - group.Config.SummaryTimerConfig.MaxEntries);
