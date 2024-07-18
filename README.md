@@ -2,7 +2,7 @@
 This is a plugin designed to track playtime of your staff members and players. 
 This exists for people that may want time tracking but don't want all the other features that come with other plugins.
 
-# features
+# Features
 1. Playtime Counting.
 2. Functionality of multiple tracking groups, allowing for different settings.
 3. Automatic summaries to keep track of your staff members.
