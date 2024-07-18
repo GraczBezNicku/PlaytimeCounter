@@ -2,6 +2,7 @@
 using PlaytimeCounter.Features;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,13 +10,13 @@ using System.Threading.Tasks;
 namespace PlaytimeCounter.Commands
 {
     [CommandHandler(typeof(RemoteAdminCommandHandler))]
-    public class ForceSummary : ICommand
+    public class RemoveTrackedUser : ICommand
     {
-        public string Command { get; } = "ForceSummary";
+        public string Command { get; } = "RemoveTrackedUser";
 
-        public string[] Aliases { get; } = { "fsum", };
+        public string[] Aliases { get; } = { "rtu", };
 
-        public string Description { get; } = "Forces a summary for a specified group. Can specify if times are to be deleted and if NextCheck should be affected.";
+        public string Description { get; } = "Removes a specified tracked user in a specified group.";
 
         public bool SanitizeResponse => false;
 
@@ -27,9 +28,9 @@ namespace PlaytimeCounter.Commands
                 return false;
             }
 
-            if(arguments.Count() < 3)
+            if (arguments.Count() < 2)
             {
-                response = "Wrong parameters! Usage: ForceSummary <groupName> <deleteTimes> <nextCheckAffected>";
+                response = "Wrong parameters! Usage: RemoveTrackedUser <groupName> <userid>";
                 return false;
             }
 
@@ -40,12 +41,19 @@ namespace PlaytimeCounter.Commands
             }
 
             TrackingGroup group = TrackingGroup.TrackingGroups.First(x => x.Name == arguments.At(0));
-            bool deleteTimes = bool.Parse(arguments.At(1));
-            bool nextCheckAffected = bool.Parse(arguments.At(2));
+            string userId = arguments.At(1);
 
-            SummaryTimer.PrepareSummary(group, deleteTimes, nextCheckAffected);
-            response = "Success!";
-            return true;
+            try
+            {
+                File.Delete(Path.Combine(group.trackedUsersDir, $"{userId}.yml"));
+                response = "Success!";
+                return true;
+            }
+            catch(Exception ex)
+            {
+                response = $"Could not remove the file! Exception: {ex.Message}";
+                return false;
+            }
         }
     }
 }

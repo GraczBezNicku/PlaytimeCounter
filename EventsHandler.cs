@@ -1,96 +1,77 @@
 ﻿using MEC;
-using PlayerRoles;
-using PluginAPI.Core;
+using PlaytimeCounter.Features;
+using PlaytimeCounter.Features.Discord;
 using PluginAPI.Core.Attributes;
+using PluginAPI.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PlaytimeCounterNWAPI
+namespace PlaytimeCounter
 {
     public class EventsHandler
     {
-        [PluginEvent(PluginAPI.Enums.ServerEventType.WaitingForPlayers)]
-        public void OnWaitingForPlayers()
-        {
-            if (Plugin.Instance.coroutines.Count == 0)
-            {
-                Plugin.Instance.coroutines.Add(Timing.RunCoroutine(API.SendAfterCooldown()));
-                Plugin.Instance.coroutines.Add(Timing.RunCoroutine(API.CheckForSummaryTime()));
-            }
-        }
+        public static event EventHandler<PlayerJoinedEvent> PlayerJoinedEvent;
+        public static event EventHandler<PlayerLeftEvent> PlayerLeftEvent;
+        public static event EventHandler<PlayerChangeRoleEvent> PlayerChangeRoleEvent;
+        public static event EventHandler<RoundStartEvent> RoundStartEvent;
+        public static event EventHandler<RoundEndEvent> RoundEndEvent;
 
         [PluginEvent(PluginAPI.Enums.ServerEventType.PlayerJoined)]
-        public void OnJoin(Player p)
+        public void OnPlayerJoined(PlayerJoinedEvent ev)
         {
-            string pGroup = ServerStatic.PermissionsHandler._members.TryGetValue(p.UserId, out string groupName) ? groupName : null;
-
-            if (pGroup == null)
-                return;
-
-            if (!Plugin.Instance.joinTime.ContainsKey(p.UserId) && Plugin.Instance.Config.groupsToLog.Contains(pGroup))
-            {
-                Plugin.Instance.joinTime.Add(p.UserId, DateTimeOffset.Now.ToUnixTimeSeconds());
-            }
+            PlayerJoinedEvent?.Invoke(this, ev);
         }
 
         [PluginEvent(PluginAPI.Enums.ServerEventType.PlayerLeft)]
-        public void OnLeft(Player p)
+        public void OnPlayerLeft(PlayerLeftEvent ev)
         {
-            if (Plugin.Instance.joinTime.ContainsKey(p.UserId))
-            {
-                long timeNow = DateTimeOffset.Now.ToUnixTimeSeconds();
-                long secondsPlayed = timeNow - Plugin.Instance.joinTime[p.UserId];
-                if (!p.DoNotTrack)
-                {
-                    API.SendWebhook(p, secondsPlayed, API.UpdateType.Normal);
-                    API.UpdateFiles(p, secondsPlayed / 60, API.UpdateType.Normal);
-                }
-                Plugin.Instance.joinTime.Remove(p.UserId);
-            }
+            PlayerLeftEvent?.Invoke(this, ev);
 
-            if (Plugin.Instance.beginOverwatchTime.ContainsKey(p.UserId))
+            if (!CustomNetworkManager.TypedSingleton._disconnectDrop)
             {
-                long timeNowOv = DateTimeOffset.Now.ToUnixTimeSeconds();
-                long secondsPlayedOv = timeNowOv - Plugin.Instance.beginOverwatchTime[p.UserId];
-                if (!p.DoNotTrack)
-                {
-                    API.SendWebhook(p, secondsPlayedOv, API.UpdateType.Overwatch);
-                    API.UpdateFiles(p, secondsPlayedOv / 60, API.UpdateType.Overwatch);
-                }
-                Plugin.Instance.beginOverwatchTime.Remove(p.UserId);
+                //Leaving the game will not save playtime, therefore we need to fire this event.
+                PlayerChangeRoleEvent roleEv = new PlayerChangeRoleEvent(ev.Player.ReferenceHub, ev.Player.RoleBase, PlayerRoles.RoleTypeId.None, PlayerRoles.RoleChangeReason.Destroyed);
+                PlayerChangeRoleEvent?.Invoke(this, roleEv);
             }
         }
 
         [PluginEvent(PluginAPI.Enums.ServerEventType.PlayerChangeRole)]
-        public void OnRoleChange(Player player, PlayerRoleBase oldRole, RoleTypeId newRole, RoleChangeReason changeReason)
+        public void OnPlayerChangeRole(PlayerChangeRoleEvent ev)
         {
-            string pGroup = ServerStatic.PermissionsHandler._members.TryGetValue(player.UserId, out string groupName) ? groupName : null;
+            PlayerChangeRoleEvent?.Invoke(this, ev);
+        }
 
-            if (pGroup == null)
-                return;
+        [PluginEvent(PluginAPI.Enums.ServerEventType.RoundStart)]
+        public void OnRoundStart(RoundStartEvent ev)
+        {
+            RoundStartEvent?.Invoke(this, ev);
+        }
 
-            if (newRole == RoleTypeId.Overwatch)
+        [PluginEvent(PluginAPI.Enums.ServerEventType.RoundEnd)]
+        public void OnRoundEnd(RoundEndEvent ev)
+        {
+            RoundEndEvent?.Invoke(this, ev);
+        }
+
+        [PluginEvent(PluginAPI.Enums.ServerEventType.WaitingForPlayers)]
+        public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
+        {
+            if(!Timing.IsRunning(DiscordWebhookHandler.msgHandle))
             {
-                if (!Plugin.Instance.beginOverwatchTime.ContainsKey(player.UserId) && Plugin.Instance.Config.groupsToLog.Contains(pGroup))
-                    Plugin.Instance.beginOverwatchTime.Add(player.UserId, DateTimeOffset.Now.ToUnixTimeSeconds());
+                DiscordWebhookHandler.msgHandle = Timing.RunCoroutine(DiscordWebhookHandler.MessageQueueCoroutine());
             }
 
-            if(oldRole.RoleTypeId == RoleTypeId.Overwatch)
+            if(!Timing.IsRunning(DiscordWebhookHandler.queueHandle))
             {
-                if(Plugin.Instance.beginOverwatchTime.ContainsKey(player.UserId))
-                {
-                    long timeNow = DateTimeOffset.Now.ToUnixTimeSeconds();
-                    long secondsPlayed = timeNow - Plugin.Instance.beginOverwatchTime[player.UserId];
-                    if (!player.DoNotTrack)
-                    {
-                        API.SendWebhook(player, secondsPlayed, API.UpdateType.Overwatch);
-                        API.UpdateFiles(player, secondsPlayed / 60, API.UpdateType.Overwatch);
-                    }
-                    Plugin.Instance.beginOverwatchTime.Remove(player.UserId);
-                }
+                DiscordWebhookHandler.queueHandle = Timing.RunCoroutine(DiscordWebhookHandler.WebhookQueueCoroutine());
+            }
+
+            if(!Timing.IsRunning(SummaryTimer.summaryHandle))
+            {
+                SummaryTimer.summaryHandle = Timing.RunCoroutine(SummaryTimer.SummaryTimerCheck());
             }
         }
     }
