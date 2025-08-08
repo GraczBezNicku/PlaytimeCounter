@@ -4,5 +4,6 @@
     {
         Group,
         User,
+        Permission
     }
 }

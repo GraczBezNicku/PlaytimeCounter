@@ -6,6 +6,7 @@ using System.Linq;
 using LabApi.Events.Arguments.PlayerEvents;
 using LabApi.Events.Arguments.ServerEvents;
 using LabApi.Features.Console;
+using LabApi.Features.Permissions;
 using LabApi.Features.Wrappers;
 using MEC;
 using PlayerRoles;
@@ -13,6 +14,7 @@ using PlaytimeCounter.Enums;
 using PlaytimeCounter.Features.Discord;
 using Serialization;
 
+using static LabApi.Features.Permissions.PermissionsManager;
 using static PlaytimeCounter.Extensions;
 
 namespace PlaytimeCounter.Features
@@ -44,9 +46,11 @@ namespace PlaytimeCounter.Features
         public List<TrackedUser> trackedUsers;
 
         public List<UserGroup> groupsToLog;
+        public List<string> idsToLog;
+        public List<string> permissionsToLog;
+
         public bool TrackEveryone;
         public bool TrackNonGroups;
-        public List<string> idsToLog;
 
         public List<RoleTypeId> rolesToTrack;
 
@@ -316,6 +320,14 @@ namespace PlaytimeCounter.Features
                     return false;
             }
 
+            if (CountingType == CountingType.Permission)
+            {
+                if (p.HasAnyPermission(permissionsToLog.ToArray()))
+                    return true;
+
+                return false;
+            }
+
             if (p.ReferenceHub.serverRoles.Group == null)
             {
                 if (!TrackNonGroups && !TrackEveryone)
@@ -404,6 +416,9 @@ namespace PlaytimeCounter.Features
                             break;
                         case CountingType.User: 
                             trackingGroup.idsToLog = trackingGroupConfig.TrackingTargets; 
+                            break;
+                        case CountingType.Permission:
+                            trackingGroup.permissionsToLog = trackingGroupConfig.TrackingTargets;
                             break;
                     }
 
@@ -513,10 +528,10 @@ namespace PlaytimeCounter.Features
         [Description("If set to true, will allow tracked users from this group to see their playtime.")]
         public bool AppearInSelfCheck { get; set; } = true;
 
-        [Description("Determines if individual users should be tracked instead of groups.")]
+        [Description("Determines the counting type used for this group.")]
         public CountingType CountingType { get; set; } = CountingType.Group;
 
-        [Description("List of Groups / UserIDs of people that are to be tracked. Whether you should put UserIDs in there instead of groups relies on the CountingType config. 'default' will track people without groups and 'everyone' will track everyone.")]
+        [Description("List of Groups / UserIDs / Permissions of people that are to be tracked. Whether you should put UserIDs in there instead of groups relies on the CountingType config. 'default' will track people without groups and 'everyone' will track everyone.")]
         public List<string> TrackingTargets { get; set; } = new List<string>()
         {
             "owner"
