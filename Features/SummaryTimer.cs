@@ -1,17 +1,13 @@
-﻿using Discord;
-using GameCore;
+﻿using LabApi.Features.Console;
 using MEC;
 using PlayerRoles;
 using PlaytimeCounter.Enums;
 using PlaytimeCounter.Features.Discord;
-using PluginAPI.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PlaytimeCounter.Features
 {
@@ -44,7 +40,17 @@ namespace PlaytimeCounter.Features
                 case SortingType.Time:
                     switch (group.Config.SummaryTimerConfig.TimeSortingRole)
                     {
-                        case "Global": listToReturn = group.trackedUsers.OrderByDescending(x => x.GlobalTime).ToList(); break;
+                        case "Global": 
+                            IEnumerable<TrackedUser> enumerable = group.trackedUsers.Where(x => x != null).OrderByDescending(x => x.GlobalTime);
+
+                            foreach (TrackedUser user in enumerable)
+                            {
+                                if (user == null)
+                                    continue;
+
+                                listToReturn.Add(user);
+                            }
+                            break;
                         case "Alive": listToReturn = group.trackedUsers.OrderByDescending(x => x.AliveTime).ToList(); break;
                         default:
                             if (Enum.TryParse(group.Config.SummaryTimerConfig.TimeSortingRole, true, out RoleTypeId role))
@@ -53,7 +59,7 @@ namespace PlaytimeCounter.Features
                             }
                             else
                             {
-                                PluginAPI.Core.Log.Error($"Could not find RoleTypeId {group.Config.SummaryTimerConfig.TimeSortingRole}! Defaulting to global...");
+                                Logger.Error($"Could not find RoleTypeId {group.Config.SummaryTimerConfig.TimeSortingRole}! Defaulting to global...");
                                 listToReturn = group.trackedUsers.OrderByDescending(x => x.GlobalTime).ToList();
                             }
                             break;

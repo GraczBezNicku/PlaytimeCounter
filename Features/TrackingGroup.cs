@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Discord;
+using LabApi.Events.Arguments.PlayerEvents;
+using LabApi.Events.Arguments.ServerEvents;
+using LabApi.Features.Console;
+using LabApi.Features.Wrappers;
 using MEC;
 using PlayerRoles;
 using PlaytimeCounter.Enums;
 using PlaytimeCounter.Features.Discord;
-using PluginAPI.Core;
-using PluginAPI.Events;
 using Serialization;
-using YamlDotNet;
+
+using static PlaytimeCounter.Extensions;
 
 namespace PlaytimeCounter.Features
 {
@@ -28,6 +28,7 @@ namespace PlaytimeCounter.Features
             EventsHandler.PlayerChangeRoleEvent += OnPlayerChangeRole;
             EventsHandler.RoundStartEvent += OnRoundStart;
             EventsHandler.RoundEndEvent += OnRoundEnd;
+
             _roleTimeOffsets = new Dictionary<Player, long>();
             _globalJoinTimes = new Dictionary<Player, long>();
             _excludedRolesOffset = new Dictionary<Player, long>();
@@ -78,7 +79,7 @@ namespace PlaytimeCounter.Features
         private Dictionary<Player, long> _globalJoinTimes;
         private Dictionary<Player, long> _excludedRolesOffset;
 
-        public void OnPlayerJoined(object sender, PlayerJoinedEvent ev)
+        public void OnPlayerJoined(PlayerJoinedEventArgs ev)
         {
             Timing.CallDelayed(1f, () =>
             {
@@ -101,13 +102,13 @@ namespace PlaytimeCounter.Features
 
                 if(_discordWebhookEnabled && Config.DiscordConfig.DiscordPlayerJoinedMessage != "")
                 {
-                    PlayerJoinedWebhook webhook = new PlayerJoinedWebhook(Config.DiscordConfig.DiscordPlayerJoinedMessage, Config.DiscordConfig.DiscordWebhookURL, this, DateTime.Now, ev.Player.Nickname, ev.Player.UserId, ev.Player.GetGroupName());
+                    PlayerJoinedWebhook webhook = new PlayerJoinedWebhook(Config.DiscordConfig.DiscordPlayerJoinedMessage, Config.DiscordConfig.DiscordWebhookURL, this, DateTime.Now, ev.Player.Nickname, ev.Player.UserId, ev.Player.UserGroup.GetGroupKey());
                     DiscordWebhookHandler.WebhookQueue.Enqueue(webhook);
                 }
             });
         }
 
-        public void OnPlayerLeft(object sender, PlayerLeftEvent ev)
+        public void OnPlayerLeft(PlayerLeftEventArgs ev)
         {
             if (!ShouldTrack(ev.Player))
             {
@@ -136,13 +137,13 @@ namespace PlaytimeCounter.Features
                         finalTime, 
                         ev.Player.Nickname, 
                         ev.Player.UserId, 
-                        ev.Player.GetGroupName());
+                        ev.Player.UserGroup.GetGroupKey());
                     DiscordWebhookHandler.WebhookQueue.Enqueue(webhook);
                 }
             }
         }
 
-        public void OnPlayerChangeRole(object sender, PlayerChangeRoleEvent ev)
+        public void OnPlayerChangeRole(PlayerChangingRoleEventArgs ev)
         {
             if (Config.CountOnlyWhenRoundStarted && !Round.IsRoundStarted)
                 return;
@@ -171,7 +172,7 @@ namespace PlaytimeCounter.Features
                 _excludedRolesOffset.Add(ev.Player, DateTimeOffset.Now.ToUnixTimeSeconds());
             }
 
-            if(rolesToTrack.Contains(ev.NewRole))
+            if (rolesToTrack.Contains(ev.NewRole))
             {
                 LogInternal($"{ev.Player.Nickname} has changed their role from {ev.OldRole.RoleTypeId} to {ev.NewRole}");
                 if(_discordWebhookEnabled && Config.DiscordConfig.DiscordPlayerChangedRoleToMessage != "")
@@ -182,7 +183,7 @@ namespace PlaytimeCounter.Features
                         DateTime.Now,
                         ev.Player.Nickname,
                         ev.Player.UserId,
-                        ev.Player.GetGroupName(),
+                        ev.Player.UserGroup.GetGroupKey(),
                         ev.OldRole.RoleTypeId,
                         ev.NewRole);
                     DiscordWebhookHandler.WebhookQueue.Enqueue(webhook);
@@ -224,7 +225,7 @@ namespace PlaytimeCounter.Features
                         DateTime.Now,
                         ev.Player.Nickname,
                         ev.Player.UserId,
-                        ev.Player.GetGroupName(),
+                        ev.Player.UserGroup.GetGroupKey(),
                         finalTime,
                         ev.OldRole.RoleTypeId,
                         ev.NewRole);
@@ -233,7 +234,7 @@ namespace PlaytimeCounter.Features
             }
         }
 
-        public void OnRoundStart(object sender, RoundStartEvent ev)
+        public void OnRoundStart()
         {
             LogInternal($"ROUND HAS STARTED AT {DateTime.Now}");
 
@@ -242,7 +243,7 @@ namespace PlaytimeCounter.Features
 
             _roleTimeOffsets.Clear();
             _globalJoinTimes.Clear();
-            foreach(Player p in Player.GetPlayers())
+            foreach(Player p in Player.ReadyList)
             {
                 if (!ShouldTrack(p))
                 {
@@ -255,7 +256,7 @@ namespace PlaytimeCounter.Features
             }
         }
 
-        public void OnRoundEnd(object sender, RoundEndEvent ev)
+        public void OnRoundEnd(RoundEndedEventArgs ev)
         {
             LogInternal($"ROUND HAS ENDED AT {DateTime.Now}");
             Helpers.LogDebug($"Round has ended and has lasted {Round.Duration.TotalSeconds} (Rounded: {Convert.ToInt64(Round.Duration.TotalSeconds)})");
@@ -266,7 +267,7 @@ namespace PlaytimeCounter.Features
             {
                 Timing.CallDelayed(1f, () =>
                 {
-                    foreach(Player p in Player.GetPlayers())
+                    foreach (Player p in Player.ReadyList)
                     {
                         if (!ShouldTrack(p))
                             continue;
@@ -294,7 +295,7 @@ namespace PlaytimeCounter.Features
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed saving a TrackingGroup's config! Exception: {ex.Message}");
+                Logger.Error($"Failed saving a TrackingGroup's config! Exception: {ex.Message}");
                 return;
             }
         }
@@ -345,15 +346,15 @@ namespace PlaytimeCounter.Features
             }
             catch(Exception ex)
             {
-                Log.Error($"Failed internal logging for group {Name}! Exception: {ex.Message}");
+                Logger.Error($"Failed internal logging for group {Name}! Exception: {ex.Message}");
             }
         }
 
         public static void LoadTrackingGroups(string configDir)
         {
-            if(Plugin.Instance.Config.TrackingGroups == null || Plugin.Instance.Config.TrackingGroups.Count < 1)
+            if (Plugin.Instance.Config.TrackingGroups == null || Plugin.Instance.Config.TrackingGroups.Count < 1)
             {
-                Log.Warning($"TrackingGroups does not contain any elements. Wrong configuration?");
+                Logger.Warn($"TrackingGroups does not contain any elements. Wrong configuration?");
                 return;
             }
 
@@ -364,7 +365,7 @@ namespace PlaytimeCounter.Features
                     string groupPath = Path.Combine(configDir, configTracker);
                     if (!Directory.Exists(groupPath))
                     {
-                        Log.Info($"TrackingGroup {configTracker} does not exist! Creating one now...");
+                        Logger.Info($"TrackingGroup {configTracker} does not exist! Creating one now...");
                         CreateGroup(configTracker, configDir);
                     }
 
@@ -398,7 +399,7 @@ namespace PlaytimeCounter.Features
                                 if (x == "default")
                                     trackingGroup.TrackNonGroups = true;
                                 else
-                                    trackingGroup.groupsToLog.Add(x.GetGroupFromString());
+                                    trackingGroup.groupsToLog.Add(x.GetGroup());
                             });
                             break;
                         case CountingType.User: 
@@ -422,7 +423,7 @@ namespace PlaytimeCounter.Features
                         }
                         catch(Exception ex) 
                         {
-                            Log.Error($"Failed reading TrackedUser data for {configTracker}! Exception: {ex.Message}");
+                            Logger.Error($"Failed reading TrackedUser data for {configTracker}! Exception: {ex.Message}");
                         }
                         trackingGroup.trackedUsers.Add(trackedUser);
                     }
@@ -431,12 +432,12 @@ namespace PlaytimeCounter.Features
 
                     TrackingGroups.Add(trackingGroup);
                     Helpers.LogDebug("Checkpoint 6");
-                    Log.Info($"Successfully loaded TrackingGroup {configTracker}!");
+                    Logger.Info($"Successfully loaded TrackingGroup {configTracker}!");
                 }
             }
             catch(Exception ex)
             {
-                Log.Error($"Failed loading groups! Exception: {ex.Message}");
+                Logger.Error($"Failed loading groups! Exception: {ex.Message}");
                 return;
             }
             Plugin.Instance.GroupsRegistered = true;
@@ -452,11 +453,11 @@ namespace PlaytimeCounter.Features
                 TrackingGroupConfig dummyConfig = new TrackingGroupConfig();
                 File.WriteAllText(Path.Combine(groupDir.FullName, "config.yml"), YamlParser.Serializer.Serialize(dummyConfig));
 
-                Log.Info($"Successfully created TrackingGroup {groupName}!");
+                Logger.Info($"Successfully created TrackingGroup {groupName}!");
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed creating group! Exception: {ex.Message}");
+                Logger.Error($"Failed creating group! Exception: {ex.Message}");
                 return;
             }
         }
@@ -465,7 +466,7 @@ namespace PlaytimeCounter.Features
         { 
             if(!TrackingGroup.TrackingGroups.Any(x => x.Name == groupName))
             {
-                Log.Error($"There is no group named {groupName}!");
+                Logger.Error($"There is no group named {groupName}!");
                 return;
             }
 

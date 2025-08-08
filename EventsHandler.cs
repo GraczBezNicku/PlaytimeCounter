@@ -1,75 +1,65 @@
-﻿using MEC;
+﻿using LabApi.Events.Arguments.PlayerEvents;
+using LabApi.Events.Arguments.ServerEvents;
+using MEC;
 using PlaytimeCounter.Features;
 using PlaytimeCounter.Features.Discord;
-using PluginAPI.Core.Attributes;
-using PluginAPI.Events;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PlaytimeCounter
 {
     public class EventsHandler
     {
-        public static event EventHandler<PlayerJoinedEvent> PlayerJoinedEvent;
-        public static event EventHandler<PlayerLeftEvent> PlayerLeftEvent;
-        public static event EventHandler<PlayerChangeRoleEvent> PlayerChangeRoleEvent;
-        public static event EventHandler<RoundStartEvent> RoundStartEvent;
-        public static event EventHandler<RoundEndEvent> RoundEndEvent;
+        public static event Action<PlayerJoinedEventArgs> PlayerJoinedEvent;
+        public static event Action<PlayerLeftEventArgs> PlayerLeftEvent;
+        public static event Action<PlayerChangingRoleEventArgs> PlayerChangeRoleEvent;
+        public static event Action RoundStartEvent;
+        public static event Action<RoundEndedEventArgs> RoundEndEvent;
 
-        [PluginEvent(PluginAPI.Enums.ServerEventType.PlayerJoined)]
-        public void OnPlayerJoined(PlayerJoinedEvent ev)
+        public void OnPlayerJoined(PlayerJoinedEventArgs ev)
         {
-            PlayerJoinedEvent?.Invoke(this, ev);
+            PlayerJoinedEvent?.Invoke(ev);
         }
 
-        [PluginEvent(PluginAPI.Enums.ServerEventType.PlayerLeft)]
-        public void OnPlayerLeft(PlayerLeftEvent ev)
+        public void OnPlayerLeft(PlayerLeftEventArgs ev)
         {
-            PlayerLeftEvent?.Invoke(this, ev);
+            PlayerLeftEvent?.Invoke(ev);
 
             if (!CustomNetworkManager.TypedSingleton._disconnectDrop)
             {
                 //Leaving the game will not save playtime, therefore we need to fire this event.
-                PlayerChangeRoleEvent roleEv = new PlayerChangeRoleEvent(ev.Player.ReferenceHub, ev.Player.RoleBase, PlayerRoles.RoleTypeId.None, PlayerRoles.RoleChangeReason.Destroyed);
-                PlayerChangeRoleEvent?.Invoke(this, roleEv);
+                PlayerChangingRoleEventArgs roleEv = new PlayerChangingRoleEventArgs(ev.Player.ReferenceHub, ev.Player.RoleBase, PlayerRoles.RoleTypeId.None, PlayerRoles.RoleChangeReason.Destroyed, PlayerRoles.RoleSpawnFlags.All);
+                PlayerChangeRoleEvent?.Invoke(roleEv);
             }
         }
 
-        [PluginEvent(PluginAPI.Enums.ServerEventType.PlayerChangeRole)]
-        public void OnPlayerChangeRole(PlayerChangeRoleEvent ev)
+        public void OnPlayerChangeRole(PlayerChangingRoleEventArgs ev)
         {
-            PlayerChangeRoleEvent?.Invoke(this, ev);
+            PlayerChangeRoleEvent?.Invoke(ev);
         }
 
-        [PluginEvent(PluginAPI.Enums.ServerEventType.RoundStart)]
-        public void OnRoundStart(RoundStartEvent ev)
+        public void OnRoundStart()
         {
-            RoundStartEvent?.Invoke(this, ev);
+            RoundStartEvent?.Invoke();
         }
 
-        [PluginEvent(PluginAPI.Enums.ServerEventType.RoundEnd)]
-        public void OnRoundEnd(RoundEndEvent ev)
+        public void OnRoundEnd(RoundEndedEventArgs ev)
         {
-            RoundEndEvent?.Invoke(this, ev);
+            RoundEndEvent?.Invoke(ev);
         }
-
-        [PluginEvent(PluginAPI.Enums.ServerEventType.WaitingForPlayers)]
-        public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
+    
+        public void OnWaitingForPlayers()
         {
-            if(!Timing.IsRunning(DiscordWebhookHandler.msgHandle))
+            if (!Timing.IsRunning(DiscordWebhookHandler.msgHandle))
             {
                 DiscordWebhookHandler.msgHandle = Timing.RunCoroutine(DiscordWebhookHandler.MessageQueueCoroutine());
             }
 
-            if(!Timing.IsRunning(DiscordWebhookHandler.queueHandle))
+            if (!Timing.IsRunning(DiscordWebhookHandler.queueHandle))
             {
                 DiscordWebhookHandler.queueHandle = Timing.RunCoroutine(DiscordWebhookHandler.WebhookQueueCoroutine());
             }
 
-            if(!Timing.IsRunning(SummaryTimer.summaryHandle))
+            if (!Timing.IsRunning(SummaryTimer.summaryHandle))
             {
                 SummaryTimer.summaryHandle = Timing.RunCoroutine(SummaryTimer.SummaryTimerCheck());
             }

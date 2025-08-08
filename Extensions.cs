@@ -1,10 +1,4 @@
-﻿using PluginAPI;
-using PluginAPI.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
 namespace PlaytimeCounter
 {
@@ -12,33 +6,32 @@ namespace PlaytimeCounter
     {
         //GROUP EXTENSIONS
 
-        public static UserGroup GetGroupFromString(this string groupName)
-        {
-            if(!ServerStatic.GetPermissionsHandler().GetAllGroups().TryGetValue(groupName, out UserGroup userGroup))
-            {
-                Log.Error($"Failed getting group as it doesn't exist!");
-            }
-            return userGroup;
-        }
-
         public static string GetGroupKey(this UserGroup group)
         {
-            return ServerStatic.PermissionsHandler._groups.FirstOrDefault(pair => pair.Value.IsGroupEqual(group)).Key;
+            if (group == null)
+                return "default";
+
+            if (!ServerStatic.PermissionsHandler.Groups.Values.Any(x => x.IsGroupEqual(group)))
+                return "default";
+
+            return ServerStatic.PermissionsHandler.Groups.FirstOrDefault(pair => IsGroupEqual(pair.Value, group)).Key;
         }
 
-        public static string GetGroupName(this Player p)
+        public static bool IsGroupEqual(this UserGroup @this, UserGroup other)
+            => (@this.BadgeColor == other.BadgeColor)
+           && (@this.Name == other.Name)
+           && (@this.BadgeText == other.BadgeText)
+           && (@this.Permissions == other.Permissions)
+           && (@this.Cover == other.Cover)
+           && (@this.HiddenByDefault == other.HiddenByDefault)
+           && (@this.Shared == other.Shared)
+           && (@this.KickPower == other.KickPower)
+           && (@this.RequiredKickPower == other.RequiredKickPower);
+
+        public static UserGroup GetGroup(this string groupKey)
         {
-            return p.ReferenceHub.serverRoles.Group == null ? "default" : p.ReferenceHub.serverRoles.Group.GetGroupKey();
+            ServerStatic.PermissionsHandler.GetAllGroups().TryGetValue(groupKey, out UserGroup userGroup);
+            return userGroup;
         }
-
-        public static bool IsGroupEqual(this UserGroup group, UserGroup other)
-            => (group.BadgeColor == other.BadgeColor)
-            && (group.BadgeText == other.BadgeText)
-            && (group.Permissions == other.Permissions)
-            && (group.Cover == other.Cover)
-            && (group.HiddenByDefault == other.HiddenByDefault)
-            && (group.Shared == other.Shared)
-            && (group.KickPower == other.KickPower)
-            && (group.RequiredKickPower == other.RequiredKickPower);
     }
 }

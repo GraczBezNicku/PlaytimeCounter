@@ -1,12 +1,11 @@
-﻿using PlayerRoles;
-using PluginAPI.Core;
+﻿using LabApi.Features.Console;
+using LabApi.Features.Wrappers;
+using PlayerRoles;
 using Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PlaytimeCounter.Features
 {
@@ -55,7 +54,7 @@ namespace PlaytimeCounter.Features
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed saving a TrackedUser! Exception: {ex.Message}");
+                Logger.Error($"Failed saving a TrackedUser! Exception: {ex.Message}");
                 return;
             }
         }

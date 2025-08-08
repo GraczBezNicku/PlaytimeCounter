@@ -1,14 +1,10 @@
-﻿using PluginAPI.Core;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
+using LabApi.Features.Console;
 using MEC;
-using PluginAPI.Core.Attributes;
-using PluginAPI.Events;
 
 namespace PlaytimeCounter.Features.Discord
 {
@@ -29,7 +25,7 @@ namespace PlaytimeCounter.Features.Discord
             string responseMessageString = await responseMessage.Content.ReadAsStringAsync();
             if (!responseMessage.IsSuccessStatusCode)
             {
-                Log.Error($"[{(int)responseMessage.StatusCode} - {responseMessage.StatusCode}] A non-successful status code was returned by Discord when trying to post to webhook. Response Message: {responseMessageString} .");
+                Logger.Error($"[{(int)responseMessage.StatusCode} - {responseMessage.StatusCode}] A non-successful status code was returned by Discord when trying to post to webhook. Response Message: {responseMessageString} .");
                 return;
             }
         }
@@ -100,7 +96,7 @@ namespace PlaytimeCounter.Features.Discord
                         Helpers.LogDebug($"Handling webhook requested by {webhook.RequestingGroup}");
                         if(webhook.FormattedMessage().Length > 2000)
                         {
-                            Log.Error($"A single webhook cannot have text longer than 2000 characters!");
+                            Logger.Error($"A single webhook cannot have text longer than 2000 characters!");
                             continue;
                         }
 

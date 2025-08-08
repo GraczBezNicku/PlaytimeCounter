@@ -1,9 +1,4 @@
-﻿using PluginAPI.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LabApi.Features.Console;
 
 namespace PlaytimeCounter
 {
@@ -12,7 +7,7 @@ namespace PlaytimeCounter
         public static void LogDebug(string message)
         {
             if (Plugin.Instance.Config.DebugMode)
-                Log.Debug(message);
+                Logger.Debug(message);
         }
     }
 }
