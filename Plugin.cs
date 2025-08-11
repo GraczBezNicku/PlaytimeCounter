@@ -18,6 +18,7 @@ namespace PlaytimeCounter
         public override Version RequiredApiVersion => LabApi.Features.LabApiProperties.CurrentVersion;
 
         private Harmony _harmony;
+        public EventsHandler eventsHandler;
 
         public bool GroupsRegistered = false;
 
@@ -28,6 +29,9 @@ namespace PlaytimeCounter
             _harmony = new Harmony($"GBN-PLAYTIMECOUNTER-{DateTime.Now}");
             _harmony.PatchAll();
 
+            eventsHandler = new EventsHandler();
+            eventsHandler.RegisterEvents();
+
             LabApi.Events.Handlers.ServerEvents.WaitingForPlayers += RegisterAllGroups;
         }
 
@@ -37,6 +41,9 @@ namespace PlaytimeCounter
 
             _harmony.UnpatchAll();
             _harmony = null;
+
+            eventsHandler.UnregisterEvents();
+            eventsHandler = null;
 
             TrackingGroup.TrackingGroups.ForEach(x => TrackingGroup.DestroyGroup(x.Name));
 

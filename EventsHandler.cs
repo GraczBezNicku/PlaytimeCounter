@@ -15,6 +15,26 @@ namespace PlaytimeCounter
         public static event Action RoundStartEvent;
         public static event Action<RoundEndedEventArgs> RoundEndEvent;
 
+        public void RegisterEvents()
+        {
+            LabApi.Events.Handlers.PlayerEvents.Joined += OnPlayerJoined;
+            LabApi.Events.Handlers.PlayerEvents.Left += OnPlayerLeft;
+            LabApi.Events.Handlers.PlayerEvents.ChangingRole += OnPlayerChangeRole;
+            LabApi.Events.Handlers.ServerEvents.RoundStarted += OnRoundStart;
+            LabApi.Events.Handlers.ServerEvents.RoundEnded += OnRoundEnd;
+            LabApi.Events.Handlers.ServerEvents.WaitingForPlayers += OnWaitingForPlayers;
+        }
+
+        public void UnregisterEvents()
+        {
+            LabApi.Events.Handlers.PlayerEvents.Joined -= OnPlayerJoined;
+            LabApi.Events.Handlers.PlayerEvents.Left -= OnPlayerLeft;
+            LabApi.Events.Handlers.PlayerEvents.ChangingRole -= OnPlayerChangeRole;
+            LabApi.Events.Handlers.ServerEvents.RoundStarted -= OnRoundStart;
+            LabApi.Events.Handlers.ServerEvents.RoundEnded -= OnRoundEnd;
+            LabApi.Events.Handlers.ServerEvents.WaitingForPlayers -= OnWaitingForPlayers;
+        }
+
         public void OnPlayerJoined(PlayerJoinedEventArgs ev)
         {
             PlayerJoinedEvent?.Invoke(ev);
