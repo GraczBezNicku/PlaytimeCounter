@@ -1,3 +1,7 @@
+# ARCHIVE NOTICE
+To avoid new serverhosts from being bamboozled by this half-working version, this repository will be archived until I clean up the LabAPI code.
+The plugin is LabAPI compatible, but contains spaghetti code and other issues which prevent full functionality, due to it being a lazy port from NWAPI.
+
 # PlaytimeCounter
 This is a plugin designed to track playtime of your staff members and players. 
 This exists for people that may want time tracking but don't want all the other features that come with other plugins.
